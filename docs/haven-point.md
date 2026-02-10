@@ -139,10 +139,25 @@ Configuration:
 ```
 
 ### ATAK Bridge
-CoT bridge for ATAK integration.
+CoT bridge for ATAK integration over Reticulum.
 
-- Script: `/root/cot_bridge_multicast.py`
-- Listens: Multicast 239.2.3.1:6969
+- Script: `/root/cot_bridge.py`
+- Identity: `/root/.cot_identity` (persistent across reboots)
+- Peer config: `/root/.cot_peer` (contains Gate's destination hash)
+- Service: `/etc/init.d/cot_bridge`
+- Logs: `/tmp/bridge.log`
+- Listens: UDP port 4349
+- Connects to: Gate bridge via Reticulum link
+
+Point nodes connect to the Gate bridge by storing its destination hash in
+`/root/.cot_peer`. The service reads this file on startup and establishes
+the link automatically.
+
+```bash
+# Set Gate's destination hash (get it from: head -1 /tmp/bridge.log on Gate)
+echo "d9bd729dfc56bcacbe4b007238bf0291" > /root/.cot_peer
+/etc/init.d/cot_bridge restart
+```
 
 ## Management
 

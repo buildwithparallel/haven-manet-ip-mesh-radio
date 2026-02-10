@@ -1,16 +1,33 @@
 #!/bin/sh
 #
 # ATAK CoT Bridge Setup Script
-# Installs the multicast-to-Reticulum bridge for ATAK/CivTAK
+# Installs the link-based CoT bridge for ATAK/CivTAK over Reticulum
 #
 # Prerequisites:
 #   - Run setup-haven-gate.sh or setup-haven-point.sh first
 #   - Run setup-reticulum.sh first
 #
-# Usage: sh setup-cot-bridge.sh
+# Usage:
+#   sh setup-cot-bridge.sh                    # Install only
+#   sh setup-cot-bridge.sh <peer_hash>        # Install and configure peering
+#
+# Peering:
+#   The bridge uses Reticulum links to connect nodes. Each bridge announces
+#   a destination hash on startup. To relay CoT traffic between two nodes,
+#   one node must know the other's hash:
+#
+#   1. Run this script on the Gate node first (no peer hash needed)
+#   2. Start the bridge and note its destination hash from /tmp/bridge.log
+#   3. Run this script on each Point node, passing the Gate's hash
+#
+#   You can also set the peer hash later:
+#     echo "<hash>" > /root/.cot_peer
+#     /etc/init.d/cot_bridge restart
 #
 
 set -e
+
+PEER_HASH="$1"
 
 echo "═══════════════════════════════════════════════════════════════════"
 echo "  ATAK CoT Bridge Setup"
@@ -28,163 +45,153 @@ if ! command -v rnsd >/dev/null 2>&1; then
     exit 1
 fi
 
-echo "[1/2] Installing CoT Bridge script..."
+echo "[1/3] Installing CoT Bridge script..."
 cat > /root/cot_bridge.py << 'BRIDGE'
 #!/usr/bin/env python3
-"""
-CoT Bridge - ATAK multicast to Reticulum
-Bridges ATAK's default multicast SA to Reticulum broadcast
-"""
+"""CoT Bridge with fragmentation for large ATAK messages"""
 import RNS
 import socket
-import struct
-import threading
+import sys
+import os
 import time
 import zlib
+import hashlib
 
-# Configuration
-MULTICAST_GROUP = "239.2.3.1"
-MULTICAST_PORT = 6969
-APP_NAME = "atak_bridge"
-ASPECT = "broadcast"
-MAX_PAYLOAD = 400
+COT_LISTEN_PORT = 4349
+COT_FORWARD_PORT = 4349
+APP_NAME = "atak"
+ASPECT = "cot"
+IDENTITY_FILE = "/root/.cot_identity"
+MAX_PAYLOAD = 400  # Safe size for link packets
 
-class CoTBridge:
-    def __init__(self):
-        self.reticulum = RNS.Reticulum()
-        self.identity = RNS.Identity()
+reticulum = RNS.Reticulum()
 
-        # Create broadcast destination
-        self.broadcast_dest = RNS.Destination(
-            None,
-            RNS.Destination.OUT,
-            RNS.Destination.PLAIN,
-            APP_NAME,
-            ASPECT
-        )
+if os.path.exists(IDENTITY_FILE):
+    identity = RNS.Identity.from_file(IDENTITY_FILE)
+else:
+    identity = RNS.Identity()
+    identity.to_file(IDENTITY_FILE)
 
-        # Set up packet callback for incoming
-        self.listen_dest = RNS.Destination(
-            None,
-            RNS.Destination.IN,
-            RNS.Destination.PLAIN,
-            APP_NAME,
-            ASPECT
-        )
-        self.listen_dest.set_packet_callback(self.packet_received)
+destination = RNS.Destination(identity, RNS.Destination.IN, RNS.Destination.SINGLE, APP_NAME, ASPECT)
+print(f"Destination hash: {destination.hash.hex()}", flush=True)
 
-        # Multicast socket for sending to ATAK
-        self.mcast_send_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-        self.mcast_send_sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+cot_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+cot_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+cot_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+cot_socket.bind(("0.0.0.0", COT_LISTEN_PORT))
+cot_socket.settimeout(0.1)
 
-        # Fragment reassembly buffer
-        self.fragments = {}
+print(f"Listening UDP:{COT_LISTEN_PORT}, forwarding to BROADCAST:{COT_FORWARD_PORT}", flush=True)
 
-        print(f"Broadcast destination: {self.broadcast_dest.hash.hex()}")
+active_link = None
+outbound_link = None
+remote_dest = None
+fragment_buffer = {}
 
-    def compress(self, data):
-        return zlib.compress(data, level=9)
+def reassemble(msg_id, seq, total, data):
+    """Reassemble fragmented messages"""
+    global fragment_buffer
+    key = msg_id.hex()
+    if key not in fragment_buffer:
+        fragment_buffer[key] = {'frags': {}, 'total': total, 'time': time.time()}
+    fragment_buffer[key]['frags'][seq] = data
 
-    def decompress(self, data):
-        return zlib.decompress(data)
+    if len(fragment_buffer[key]['frags']) == total:
+        full = b''.join(fragment_buffer[key]['frags'][i] for i in range(total))
+        del fragment_buffer[key]
+        return full
+    return None
 
-    def fragment(self, data, msg_id):
-        """Fragment data into chunks with headers"""
-        chunks = []
-        total = (len(data) + MAX_PAYLOAD - 1) // MAX_PAYLOAD
-        for i in range(total):
-            start = i * MAX_PAYLOAD
-            end = min(start + MAX_PAYLOAD, len(data))
-            header = struct.pack(">IBB", msg_id, i, total)
-            chunks.append(header + data[start:end])
-        return chunks
+def link_packet_callback(message, packet):
+    try:
+        # Check for fragment: F + msg_id(4) + seq(1) + total(1) + data
+        if message[0:1] == b'F' and len(message) > 6:
+            msg_id, seq, total = message[1:5], message[5], message[6]
+            data = message[7:]
+            print(f"RX frag {seq+1}/{total}", flush=True)
+            full = reassemble(msg_id, seq, total, data)
+            if full:
+                # Decompress
+                if full[:2] in (b"\x78\x9c", b"\x78\x01", b"\x78\xda"):
+                    full = zlib.decompress(full)
+                print(f"Reassembled: {len(full)} bytes", flush=True)
+                cot_socket.sendto(full, ("10.41.255.255", COT_FORWARD_PORT))
+        else:
+            # Single packet
+            if message[:2] in (b"\x78\x9c", b"\x78\x01", b"\x78\xda"):
+                message = zlib.decompress(message)
+            print(f"RX: {len(message)} bytes", flush=True)
+            cot_socket.sendto(message, ("10.41.255.255", COT_FORWARD_PORT))
+    except Exception as e:
+        print(f"RX Error: {e}", flush=True)
 
-    def reassemble(self, packet_data):
-        """Reassemble fragments, returns complete data or None"""
-        if len(packet_data) < 6:
-            return packet_data
+def link_established(link):
+    global active_link
+    print(f"Inbound link established", flush=True)
+    active_link = link
+    link.set_packet_callback(link_packet_callback)
 
-        msg_id, seq, total = struct.unpack(">IBB", packet_data[:6])
-        data = packet_data[6:]
+destination.set_link_established_callback(link_established)
+destination.announce()
 
-        if total == 1:
-            return data
-
-        if msg_id not in self.fragments:
-            self.fragments[msg_id] = {}
-
-        self.fragments[msg_id][seq] = data
-
-        if len(self.fragments[msg_id]) == total:
-            result = b''.join(self.fragments[msg_id][i] for i in range(total))
-            del self.fragments[msg_id]
-            return result
-
-        return None
-
-    def packet_received(self, data, packet):
-        """Handle incoming Reticulum packet"""
-        try:
-            reassembled = self.reassemble(data)
-            if reassembled is None:
-                return
-
-            decompressed = self.decompress(reassembled)
-            self.mcast_send_sock.sendto(
-                decompressed,
-                (MULTICAST_GROUP, MULTICAST_PORT)
-            )
-            print(f"[Downlink] RX {len(data)} bytes -> multicast")
-        except Exception as e:
-            print(f"[Downlink] Error: {e}")
-
-    def uplink_thread(self):
-        """Listen for ATAK multicast and send to Reticulum"""
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        sock.bind(('', MULTICAST_PORT))
-
-        mreq = struct.pack("4sl", socket.inet_aton(MULTICAST_GROUP), socket.INADDR_ANY)
-        sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
-
-        print(f"Joined multicast {MULTICAST_GROUP}:{MULTICAST_PORT}")
-        print("[Uplink] Thread started")
-
-        while True:
-            try:
-                data, addr = sock.recvfrom(65535)
-                print(f"[Uplink] RX {len(data)} bytes from {addr}")
-
-                compressed = self.compress(data)
-                msg_id = hash(data) & 0xFFFFFFFF
-
-                fragments = self.fragment(compressed, msg_id)
-                for frag in fragments:
-                    packet = RNS.Packet(self.broadcast_dest, frag)
-                    packet.send()
-
-                print(f"[Uplink] TX {len(compressed)} bytes ({len(fragments)} fragments)")
-            except Exception as e:
-                print(f"[Uplink] Error: {e}")
-
-    def run(self):
-        print("TAK-Reticulum Multicast Bridge starting...")
-
-        uplink = threading.Thread(target=self.uplink_thread, daemon=True)
-        uplink.start()
-
-        print("Bridge running!")
-
-        while True:
+if len(sys.argv) > 1:
+    remote_hash = bytes.fromhex(sys.argv[1])
+    print(f"Connecting to: {sys.argv[1][:16]}...", flush=True)
+    if not RNS.Transport.has_path(remote_hash):
+        RNS.Transport.request_path(remote_hash)
+        for _ in range(10):
             time.sleep(1)
+            if RNS.Transport.has_path(remote_hash):
+                break
+    remote_identity = RNS.Identity.recall(remote_hash)
+    if remote_identity:
+        remote_dest = RNS.Destination(remote_identity, RNS.Destination.OUT, RNS.Destination.SINGLE, APP_NAME, ASPECT)
+        outbound_link = RNS.Link(remote_dest)
+        outbound_link.set_packet_callback(link_packet_callback)
+        outbound_link.set_link_established_callback(lambda l: print("Outbound link ready!", flush=True))
 
-if __name__ == "__main__":
-    bridge = CoTBridge()
-    bridge.run()
+print("Bridge running...", flush=True)
+
+while True:
+    try:
+        data, addr = cot_socket.recvfrom(8192)
+
+        link = outbound_link if (outbound_link and outbound_link.status == RNS.Link.ACTIVE) else active_link
+        if not link or link.status != RNS.Link.ACTIVE:
+            continue
+
+        # Compress
+        compressed = zlib.compress(data, 9)
+        print(f"UDP RX: {len(data)}b -> {len(compressed)}b compressed", flush=True)
+
+        if len(compressed) <= MAX_PAYLOAD:
+            RNS.Packet(link, compressed).send()
+            print(f"TX: {len(compressed)} bytes", flush=True)
+        else:
+            # Fragment
+            msg_id = hashlib.md5(data).digest()[:4]
+            frag_size = MAX_PAYLOAD - 7
+            chunks = [compressed[i:i+frag_size] for i in range(0, len(compressed), frag_size)]
+            total = len(chunks)
+            print(f"TX: fragmenting into {total} packets", flush=True)
+            for seq, chunk in enumerate(chunks):
+                pkt = b'F' + msg_id + bytes([seq, total]) + chunk
+                RNS.Packet(link, pkt).send()
+                time.sleep(0.02)
+            print(f"TX: sent {total} fragments", flush=True)
+
+    except socket.timeout:
+        pass
+    except Exception as e:
+        print(f"Error: {e}", flush=True)
+
+    # Clean old fragments
+    now = time.time()
+    fragment_buffer = {k:v for k,v in fragment_buffer.items() if now - v['time'] < 30}
 BRIDGE
 chmod +x /root/cot_bridge.py
 
-echo "[2/2] Creating CoT Bridge service..."
+echo "[2/3] Creating CoT Bridge service..."
 cat > /etc/init.d/cot_bridge << 'EOF'
 #!/bin/sh /etc/rc.common
 START=99
@@ -192,8 +199,12 @@ STOP=10
 
 start() {
     echo "Starting CoT Bridge..."
+    PEER=""
+    if [ -f /root/.cot_peer ]; then
+        PEER=$(cat /root/.cot_peer | tr -d ' \n\r\t')
+    fi
     cd /root
-    python3 /root/cot_bridge.py > /tmp/bridge.log 2>&1 &
+    python3 /root/cot_bridge.py $PEER > /tmp/bridge.log 2>&1 &
     echo "CoT Bridge started (PID: $!)"
 }
 
@@ -211,6 +222,16 @@ restart() {
 EOF
 chmod +x /etc/init.d/cot_bridge
 
+echo "[3/3] Configuring peering..."
+if [ -n "$PEER_HASH" ]; then
+    echo "$PEER_HASH" > /root/.cot_peer
+    echo "  Peer hash saved to /root/.cot_peer"
+    echo "  Bridge will connect to: ${PEER_HASH}"
+else
+    echo "  No peer hash provided (this is normal for the Gate node)"
+    echo "  Start the bridge, then use its hash to set up Point nodes"
+fi
+
 echo ""
 echo "═══════════════════════════════════════════════════════════════════"
 echo "  ATAK CoT Bridge Setup Complete!"
@@ -218,16 +239,19 @@ echo "════════════════════════�
 echo ""
 echo "  Script:  /root/cot_bridge.py"
 echo "  Service: /etc/init.d/cot_bridge"
+echo "  Peer:    /root/.cot_peer (optional)"
 echo "  Logs:    /tmp/bridge.log"
 echo ""
 echo "  Start the bridge:"
 echo "    /etc/init.d/cot_bridge enable"
 echo "    /etc/init.d/cot_bridge start"
 echo ""
-echo "  ATAK Configuration:"
-echo "    - Use default settings (SA Multicast enabled)"
-echo "    - No custom inputs/outputs needed"
-echo "    - Devices auto-discover via 239.2.3.1:6969"
+echo "  Get this node's destination hash:"
+echo "    head -1 /tmp/bridge.log"
+echo ""
+echo "  Set or change the peer hash later:"
+echo "    echo \"<hash>\" > /root/.cot_peer"
+echo "    /etc/init.d/cot_bridge restart"
 echo ""
 echo "  Monitor:"
 echo "    tail -f /tmp/bridge.log"

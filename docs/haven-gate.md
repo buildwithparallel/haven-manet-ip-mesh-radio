@@ -168,9 +168,17 @@ See [../Reticulum/README.md](../Reticulum/README.md) for details.
 ### ATAK Bridge
 CoT bridge for ATAK/CivTAK integration over Reticulum.
 
-- Script: `/root/cot_bridge_multicast.py`
-- Listens: Multicast 239.2.3.1:6969
-- Forwards to: Reticulum broadcast destination
+- Script: `/root/cot_bridge.py`
+- Identity: `/root/.cot_identity` (persistent across reboots)
+- Peer config: `/root/.cot_peer` (optional — Gate typically has no peer)
+- Service: `/etc/init.d/cot_bridge`
+- Logs: `/tmp/bridge.log`
+- Listens: UDP port 4349
+- Forwards to: Reticulum link → peer bridge
+
+The Gate bridge runs without a peer hash — it listens for inbound links from
+Point nodes. Get its destination hash with `head -1 /tmp/bridge.log` and
+provide it to each Point node during their CoT bridge setup.
 
 See [../atak/README.md](../atak/README.md) for details.
 

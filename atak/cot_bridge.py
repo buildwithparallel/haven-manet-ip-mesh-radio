@@ -1,209 +1,141 @@
 #!/usr/bin/env python3
-"""
-CoT Bridge - ATAK Multicast to Reticulum
-
-This bridge captures ATAK's default multicast CoT (Cursor-on-Target) traffic
-and relays it over Reticulum to other Haven mesh nodes.
-
-Usage:
-    python3 cot_bridge.py
-
-The bridge automatically:
-- Joins ATAK's multicast group (239.2.3.1:6969)
-- Compresses CoT XML with zlib
-- Fragments large messages for Reticulum's 500-byte MTU
-- Broadcasts to all Reticulum peers
-
-Deploy this script on each Haven node that should bridge ATAK traffic.
-"""
-
+"""CoT Bridge with fragmentation for large ATAK messages"""
 import RNS
 import socket
-import threading
+import sys
+import os
 import time
 import zlib
 import hashlib
 
-# ATAK default multicast settings
-MULTICAST_GROUP = "239.2.3.1"
-MULTICAST_PORT = 6969
+COT_LISTEN_PORT = 4349
+COT_FORWARD_PORT = 4349
+APP_NAME = "atak"
+ASPECT = "cot"
+IDENTITY_FILE = "/root/.cot_identity"
+MAX_PAYLOAD = 400  # Safe size for link packets
 
-# Reticulum application identifiers
-APP_NAME = "atak_bridge"
-ASPECT = "broadcast"
-
-# Maximum payload per Reticulum packet (MTU is 500, leave room for headers)
-MAX_PAYLOAD = 400
-
-print("TAK-Reticulum Multicast Bridge starting...", flush=True)
-
-# Initialize Reticulum
 reticulum = RNS.Reticulum()
 
-# Create a PLAIN destination for broadcast (no encryption identity needed)
-# All bridges use the same app name/aspect so they can hear each other
-broadcast_destination = RNS.Destination(
-    None,
-    RNS.Destination.IN,
-    RNS.Destination.PLAIN,
-    APP_NAME, ASPECT
-)
+if os.path.exists(IDENTITY_FILE):
+    identity = RNS.Identity.from_file(IDENTITY_FILE)
+else:
+    identity = RNS.Identity()
+    identity.to_file(IDENTITY_FILE)
 
-print(f"Broadcast destination: {broadcast_destination.hash.hex()}", flush=True)
+destination = RNS.Destination(identity, RNS.Destination.IN, RNS.Destination.SINGLE, APP_NAME, ASPECT)
+print(f"Destination hash: {destination.hash.hex()}", flush=True)
 
-# Set up multicast UDP socket
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+cot_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+cot_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+cot_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+cot_socket.bind(("0.0.0.0", COT_LISTEN_PORT))
+cot_socket.settimeout(0.1)
 
-# Allow multiple processes to bind (useful for testing)
-try:
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-except AttributeError:
-    pass  # SO_REUSEPORT not available on all platforms
+print(f"Listening UDP:{COT_LISTEN_PORT}, forwarding to BROADCAST:{COT_FORWARD_PORT}", flush=True)
 
-# Configure multicast
-sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
-sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_LOOP, 1)
-
-# Bind to multicast port
-sock.bind(("0.0.0.0", MULTICAST_PORT))
-
-# Join multicast group on all interfaces
-mreq = socket.inet_aton(MULTICAST_GROUP) + socket.inet_aton("0.0.0.0")
-sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
-
-print(f"Joined multicast {MULTICAST_GROUP}:{MULTICAST_PORT}", flush=True)
-
-# Fragment reassembly buffer
-# Key: message ID (hex), Value: {frags: {seq: data}, total: int, time: float}
+active_link = None
+outbound_link = None
+remote_dest = None
 fragment_buffer = {}
 
-
 def reassemble(msg_id, seq, total, data):
-    """
-    Reassemble fragmented messages.
-
-    Returns complete message when all fragments received, None otherwise.
-    """
+    """Reassemble fragmented messages"""
     global fragment_buffer
     key = msg_id.hex()
-
     if key not in fragment_buffer:
-        fragment_buffer[key] = {
-            'frags': {},
-            'total': total,
-            'time': time.time()
-        }
-
+        fragment_buffer[key] = {'frags': {}, 'total': total, 'time': time.time()}
     fragment_buffer[key]['frags'][seq] = data
 
-    # Check if all fragments received
     if len(fragment_buffer[key]['frags']) == total:
-        # Reassemble in order
         full = b''.join(fragment_buffer[key]['frags'][i] for i in range(total))
         del fragment_buffer[key]
         return full
-
     return None
 
-
-def downlink_callback(data, packet):
-    """
-    Handle incoming Reticulum packets.
-
-    Receives data from other bridges and sends to local multicast.
-    """
+def link_packet_callback(message, packet):
     try:
-        # Check for fragmented message
-        # Fragment header: 'F' + msg_id(4) + seq(1) + total(1) + data
-        if data[0:1] == b'F' and len(data) > 6:
-            msg_id = data[1:5]
-            seq = data[5]
-            total = data[6]
-            frag_data = data[7:]
-
-            print(f"[Downlink] RX frag {seq+1}/{total}", flush=True)
-
-            full = reassemble(msg_id, seq, total, frag_data)
+        # Check for fragment: F + msg_id(4) + seq(1) + total(1) + data
+        if message[0:1] == b'F' and len(message) > 6:
+            msg_id, seq, total = message[1:5], message[5], message[6]
+            data = message[7:]
+            print(f"RX frag {seq+1}/{total}", flush=True)
+            full = reassemble(msg_id, seq, total, data)
             if full:
-                # Decompress if zlib compressed
+                # Decompress
                 if full[:2] in (b"\x78\x9c", b"\x78\x01", b"\x78\xda"):
                     full = zlib.decompress(full)
-                print(f"[Downlink] Reassembled {len(full)} bytes -> multicast", flush=True)
-                sock.sendto(full, (MULTICAST_GROUP, MULTICAST_PORT))
+                print(f"Reassembled: {len(full)} bytes", flush=True)
+                cot_socket.sendto(full, ("10.41.255.255", COT_FORWARD_PORT))
         else:
-            # Single packet (not fragmented)
-            if data[:2] in (b"\x78\x9c", b"\x78\x01", b"\x78\xda"):
-                data = zlib.decompress(data)
-            print(f"[Downlink] RX {len(data)} bytes -> multicast", flush=True)
-            sock.sendto(data, (MULTICAST_GROUP, MULTICAST_PORT))
-
+            # Single packet
+            if message[:2] in (b"\x78\x9c", b"\x78\x01", b"\x78\xda"):
+                message = zlib.decompress(message)
+            print(f"RX: {len(message)} bytes", flush=True)
+            cot_socket.sendto(message, ("10.41.255.255", COT_FORWARD_PORT))
     except Exception as e:
-        print(f"[Downlink] Error: {e}", flush=True)
+        print(f"RX Error: {e}", flush=True)
 
+def link_established(link):
+    global active_link
+    print(f"Inbound link established", flush=True)
+    active_link = link
+    link.set_packet_callback(link_packet_callback)
 
-# Register callback for incoming Reticulum packets
-broadcast_destination.set_packet_callback(downlink_callback)
+destination.set_link_established_callback(link_established)
+destination.announce()
 
+if len(sys.argv) > 1:
+    remote_hash = bytes.fromhex(sys.argv[1])
+    print(f"Connecting to: {sys.argv[1][:16]}...", flush=True)
+    if not RNS.Transport.has_path(remote_hash):
+        RNS.Transport.request_path(remote_hash)
+        for _ in range(10):
+            time.sleep(1)
+            if RNS.Transport.has_path(remote_hash):
+                break
+    remote_identity = RNS.Identity.recall(remote_hash)
+    if remote_identity:
+        remote_dest = RNS.Destination(remote_identity, RNS.Destination.OUT, RNS.Destination.SINGLE, APP_NAME, ASPECT)
+        outbound_link = RNS.Link(remote_dest)
+        outbound_link.set_packet_callback(link_packet_callback)
+        outbound_link.set_link_established_callback(lambda l: print("Outbound link ready!", flush=True))
 
-def uplink_thread():
-    """
-    Handle outgoing traffic.
+print("Bridge running...", flush=True)
 
-    Receives multicast from ATAK and sends to Reticulum.
-    """
-    print("[Uplink] Thread started", flush=True)
+while True:
+    try:
+        data, addr = cot_socket.recvfrom(8192)
 
-    while True:
-        try:
-            # Receive from multicast
-            data, addr = sock.recvfrom(4096)
-            print(f"[Uplink] RX {len(data)} bytes from {addr}", flush=True)
+        link = outbound_link if (outbound_link and outbound_link.status == RNS.Link.ACTIVE) else active_link
+        if not link or link.status != RNS.Link.ACTIVE:
+            continue
 
-            # Compress the CoT XML
-            compressed = zlib.compress(data, 9)
+        # Compress
+        compressed = zlib.compress(data, 9)
+        print(f"UDP RX: {len(data)}b -> {len(compressed)}b compressed", flush=True)
 
-            if len(compressed) <= MAX_PAYLOAD:
-                # Fits in single packet
-                packet = RNS.Packet(broadcast_destination, compressed)
-                packet.send()
-                print(f"[Uplink] TX {len(compressed)} bytes to Reticulum", flush=True)
-            else:
-                # Need to fragment
-                msg_id = hashlib.md5(data).digest()[:4]  # 4-byte message ID
-                frag_size = MAX_PAYLOAD - 7  # Account for fragment header
+        if len(compressed) <= MAX_PAYLOAD:
+            RNS.Packet(link, compressed).send()
+            print(f"TX: {len(compressed)} bytes", flush=True)
+        else:
+            # Fragment
+            msg_id = hashlib.md5(data).digest()[:4]
+            frag_size = MAX_PAYLOAD - 7
+            chunks = [compressed[i:i+frag_size] for i in range(0, len(compressed), frag_size)]
+            total = len(chunks)
+            print(f"TX: fragmenting into {total} packets", flush=True)
+            for seq, chunk in enumerate(chunks):
+                pkt = b'F' + msg_id + bytes([seq, total]) + chunk
+                RNS.Packet(link, pkt).send()
+                time.sleep(0.02)
+            print(f"TX: sent {total} fragments", flush=True)
 
-                chunks = [compressed[i:i+frag_size]
-                         for i in range(0, len(compressed), frag_size)]
+    except socket.timeout:
+        pass
+    except Exception as e:
+        print(f"Error: {e}", flush=True)
 
-                for seq, chunk in enumerate(chunks):
-                    # Fragment header: 'F' + msg_id + seq + total + data
-                    pkt_data = b'F' + msg_id + bytes([seq, len(chunks)]) + chunk
-                    packet = RNS.Packet(broadcast_destination, pkt_data)
-                    packet.send()
-                    time.sleep(0.02)  # Small delay between fragments
-
-                print(f"[Uplink] TX {len(chunks)} fragments to Reticulum", flush=True)
-
-        except Exception as e:
-            print(f"[Uplink] Error: {e}", flush=True)
-
-        # Clean up old incomplete fragments (older than 30 seconds)
-        now = time.time()
-        for key in list(fragment_buffer.keys()):
-            if now - fragment_buffer[key]['time'] > 30:
-                del fragment_buffer[key]
-
-
-# Start uplink thread
-uplink = threading.Thread(target=uplink_thread, daemon=True)
-uplink.start()
-
-print("Bridge running!", flush=True)
-
-# Keep main thread alive
-try:
-    while True:
-        time.sleep(1)
-except KeyboardInterrupt:
-    print("\nShutting down...", flush=True)
+    # Clean old fragments
+    now = time.time()
+    fragment_buffer = {k:v for k,v in fragment_buffer.items() if now - v['time'] < 30}

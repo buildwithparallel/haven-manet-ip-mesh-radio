@@ -114,7 +114,7 @@ uci set network.ahwlan.delegate='0'
 
 uci set network.bat0=interface
 uci set network.bat0.proto='batadv'
-uci set network.bat0.routing_algo='BATMAN_IV'
+uci set network.bat0.routing_algo='BATMAN_V'
 uci set network.bat0.aggregated_ogms='1'
 uci set network.bat0.gw_mode='client'
 uci set network.bat0.orig_interval='1000'

@@ -33,7 +33,7 @@ WIFI_5GHZ_CHANNEL="36"
 
 # DHCP settings for mesh clients
 DHCP_START="100"
-DHCP_LIMIT="150"
+DHCP_LIMIT="16"
 DHCP_LEASETIME="12h"
 
 #═══════════════════════════════════════════════════════════════════════════════
@@ -115,7 +115,7 @@ uci set network.ahwlan.delegate='0'
 
 uci set network.bat0=interface
 uci set network.bat0.proto='batadv'
-uci set network.bat0.routing_algo='BATMAN_IV'
+uci set network.bat0.routing_algo='BATMAN_V'
 uci set network.bat0.aggregated_ogms='1'
 uci set network.bat0.gw_mode='server'
 uci set network.bat0.orig_interval='1000'
