@@ -2,6 +2,8 @@
 
 This guide explains how to use ATAK (Android Team Awareness Kit) and CivTAK over the Haven mesh network using Reticulum as the transport layer.
 
+**[Haven Guide](https://buildwithparallel.com/products/haven)** - Video tutorials and support for the complete Haven platform.
+
 ## Overview
 
 ATAK uses the Cursor-on-Target (CoT) protocol for sharing situational awareness data (positions, markers, messages). By default, ATAK sends CoT via multicast UDP. The Haven bridge captures this traffic and relays it over Reticulum to other mesh nodes.

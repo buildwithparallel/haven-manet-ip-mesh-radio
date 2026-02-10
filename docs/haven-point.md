@@ -2,6 +2,8 @@
 
 The **Haven Point** is a mesh extender node that connects to the Haven Gate over the HaLow mesh backhaul and provides local WiFi access to clients. It relies on the Gate node for internet connectivity and DHCP.
 
+**[Haven Guide](https://buildwithparallel.com/products/haven)** - Video tutorials, schematics, enclosures, and support.
+
 ## Overview
 
 | Property | Value |

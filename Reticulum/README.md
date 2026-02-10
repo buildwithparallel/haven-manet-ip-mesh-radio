@@ -2,6 +2,8 @@
 
 [Reticulum](https://reticulum.network/) is a cryptography-based networking stack for building resilient networks over any medium. On Haven nodes, Reticulum provides an encrypted overlay network that operates on top of the HaLow mesh.
 
+**[Haven Guide](https://buildwithparallel.com/products/haven)** - Video tutorials and support for the complete Haven platform.
+
 ## Why Reticulum?
 
 - **End-to-end encryption** - All traffic is encrypted by default

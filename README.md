@@ -2,6 +2,8 @@
 
 Build decentralized, long-range mesh networks with **Haven** - a complete open-source solution for creating self-healing IP networks that share internet access across kilometers without any central infrastructure.
 
+**[Haven Guide](https://buildwithparallel.com/products/haven)** - Video tutorials, schematics, 3D printable enclosures, Discord community, and direct support.
+
 ## What is Haven?
 
 Haven is a mesh networking platform that combines:
@@ -183,6 +185,12 @@ All components are open source:
 | HaLow Mesh | WPA3 SAE (CCMP) - strongest WiFi encryption |
 | Reticulum | Curve25519 + AES-128 end-to-end encryption |
 | ATAK | Optional additional encryption |
+
+## Support & Community
+
+- **[Haven Guide](https://buildwithparallel.com/products/haven)** - Complete build guide with videos
+- **Discord** - Join the community (link in Haven Guide)
+- **Direct Support** - Available through Parallel
 
 ## Contributing
 

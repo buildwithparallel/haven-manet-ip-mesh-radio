@@ -2,6 +2,8 @@
 
 The **Haven Gate** is the primary gateway node that provides internet uplink to the mesh network. It runs OpenWrt and serves as the DHCP server and default gateway for all mesh clients.
 
+**[Haven Guide](https://buildwithparallel.com/products/haven)** - Video tutorials, schematics, enclosures, and support.
+
 ## Overview
 
 | Property | Value |
