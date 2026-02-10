@@ -1,0 +1,20 @@
+# Haven Point (Blue)
+
+## Node Details
+- IP: 10.41.73.196
+- SSH: root / blue
+- WiFi AP: 5GHz on phy1-ap0
+- Mesh: 802.11ah HaLow on wlan0 (ESSID: "haven")
+
+## Fix: Missing Default Gateway (2026-02-09)
+
+5GHz clients couldn't reach internet - no default route was configured.
+
+### Solution
+```bash
+uci set network.ahwlan.gateway="10.41.0.1"
+uci commit network
+```
+
+Traffic flow: 5GHz Clients -> Blue -> HaLow mesh -> Green (10.41.0.1) -> Internet
+

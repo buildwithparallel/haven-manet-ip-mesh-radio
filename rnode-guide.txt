@@ -1,0 +1,690 @@
+================================================================================
+                    RETICULUM + HAVEN NODES + ATAK GUIDE
+                    Building Mesh Networks for Tactical Comms
+================================================================================
+
+Author: Refactored
+YouTube: [Your Channel]
+Date: February 2026
+
+This guide covers setting up Reticulum mesh networking on Haven nodes with
+802.11ah HaLow radios, and bridging ATAK (Android Team Awareness Kit) traffic
+over the encrypted Reticulum network.
+
+================================================================================
+                              TABLE OF CONTENTS
+================================================================================
+
+1. Overview
+2. Hardware Requirements
+3. Network Architecture
+4. Installing Reticulum on Haven/OpenWrt
+5. Configuring Reticulum Interfaces
+6. Understanding the Network Stack
+7. Setting Up ATAK Bridge
+8. Testing the Setup
+9. RNode vs HaLow: When to Use Each
+10. Building an RNode (LoRa Option)
+11. Troubleshooting
+12. Advanced Configuration
+
+================================================================================
+                              1. OVERVIEW
+================================================================================
+
+What We're Building:
+- Two Haven mesh nodes communicating over 802.11ah HaLow (916 MHz)
+- Reticulum network stack providing encrypted, delay-tolerant networking
+- ATAK integration for tactical situational awareness
+- Long-range mesh backhaul with WiFi client access points
+
+Key Technologies:
+- Reticulum: Cryptographic networking stack (https://reticulum.network)
+- HaLow (802.11ah): Sub-1GHz WiFi for long-range mesh (up to 1km+)
+- BATMAN-adv: Layer 2 mesh routing protocol
+- ATAK: Android tactical awareness application
+- CoT: Cursor on Target protocol (XML over UDP)
+
+================================================================================
+                         2. HARDWARE REQUIREMENTS
+================================================================================
+
+Per Node:
+- Raspberry Pi 4/5 (or similar SBC)
+- Haven board with Morse Micro HaLow radio (802.11ah)
+- Optional: USB 2.4GHz WiFi adapter (for additional client AP)
+- MicroSD card (16GB+ recommended)
+- Power supply (5V/3A)
+
+Our Test Setup:
+- GREEN node: Pi with HaLow + 5GHz + 2.4GHz radios (meshgate with internet)
+- BLUE node: Pi with HaLow + 5GHz radios (mesh point)
+
+================================================================================
+                         3. NETWORK ARCHITECTURE
+================================================================================
+
+Physical Layer:
+```
+┌──────────────────┐         HaLow 916MHz          ┌──────────────────┐
+│   GREEN NODE     │◄────────────────────────────►│    BLUE NODE     │
+│   (Meshgate)     │        "haven" mesh          │   (Mesh Point)   │
+│                  │                               │                  │
+│  - 5GHz AP       │                               │  - 5GHz AP       │
+│  - 2.4GHz AP     │                               │                  │
+│  - Internet GW   │                               │                  │
+└──────────────────┘                               └──────────────────┘
+      │                                                   │
+      │ green-5ghz                               blue-5ghz│
+      │ green-2.4ghz                                      │
+      ▼                                                   ▼
+┌──────────────────┐                               ┌──────────────────┐
+│  ATAK Device 1   │                               │  ATAK Device 2   │
+│   (Android)      │                               │   (Android)      │
+└──────────────────┘                               └──────────────────┘
+```
+
+Network Stack:
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        ATAK (CoT over UDP)                          │
+├─────────────────────────────────────────────────────────────────────┤
+│                      CoT Bridge (Python)                            │
+├─────────────────────────────────────────────────────────────────────┤
+│                   RETICULUM (Encrypted Transport)                   │
+├─────────────────────────────────────────────────────────────────────┤
+│                    AutoInterface / UDPInterface                     │
+├─────────────────────────────────────────────────────────────────────┤
+│                      br-ahwlan (Linux Bridge)                       │
+├─────────────────────────────────────────────────────────────────────┤
+│                      bat0 (BATMAN-adv Mesh)                         │
+├─────────────────────────────────────────────────────────────────────┤
+│                   wlan0 (HaLow 802.11ah Radio)                      │
+│                      916 MHz, "haven" mesh                          │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+IP Addressing:
+- Network: 10.41.0.0/16
+- GREEN: 10.41.0.1 (gateway)
+- BLUE: 10.41.73.196
+- DHCP clients: 10.41.0.100-115
+
+================================================================================
+                  4. INSTALLING RETICULUM ON HAVEN/OPENWRT
+================================================================================
+
+Step 1: SSH into the node
+-------------------------
+ssh root@<node_ip>
+# Default passwords: green/blue (change these!)
+
+Step 2: Update package lists
+----------------------------
+opkg update
+
+Step 3: Install Python3 and pip
+-------------------------------
+opkg install python3 python3-pip
+
+Step 4: Install Reticulum
+-------------------------
+pip3 install rns --break-system-packages
+
+Step 5: Verify installation
+---------------------------
+rnsd --version
+# Should show: Reticulum Network Stack 1.1.3 (or newer)
+
+================================================================================
+                    5. CONFIGURING RETICULUM INTERFACES
+================================================================================
+
+Create the config file at ~/.reticulum/config
+
+MESHGATE NODE (GREEN - has internet):
+-------------------------------------
+[reticulum]
+  share_instance = Yes
+  enable_transport = Yes
+  instance_control_port = 37428
+
+[interfaces]
+  # AutoInterface over br-ahwlan bridge (includes HaLow mesh backhaul)
+  # Note: Radio params (916 MHz, etc.) are set at OS level, not here
+  [[HaLow Mesh Bridge]]
+    type = AutoInterface
+    enabled = Yes
+    devices = br-ahwlan
+    group_id = reticulum
+
+  # UDP broadcast on mesh network
+  [[UDP Broadcast]]
+    type = UDPInterface
+    enabled = Yes
+    listen_ip = 10.41.0.1
+    listen_port = 4242
+    forward_ip = 10.41.255.255
+    forward_port = 4242
+
+
+MESH POINT NODE (BLUE):
+-----------------------
+[reticulum]
+  share_instance = Yes
+  enable_transport = Yes
+  instance_control_port = 37428
+
+[interfaces]
+  # AutoInterface over br-ahwlan bridge (includes HaLow mesh backhaul)
+  # Note: Radio params (916 MHz, etc.) are set at OS level, not here
+  [[HaLow Mesh Bridge]]
+    type = AutoInterface
+    enabled = Yes
+    devices = br-ahwlan
+    group_id = reticulum
+
+  # UDP broadcast on mesh network
+  [[UDP Broadcast]]
+    type = UDPInterface
+    enabled = Yes
+    listen_ip = 10.41.73.196
+    listen_port = 4242
+    forward_ip = 10.41.255.255
+    forward_port = 4242
+
+
+Create systemd/init.d service:
+------------------------------
+cat > /etc/init.d/rnsd << 'EOF'
+#!/bin/sh /etc/rc.common
+
+START=99
+STOP=10
+USE_PROCD=1
+
+start_service() {
+    procd_open_instance
+    procd_set_param command /usr/bin/rnsd
+    procd_set_param respawn
+    procd_set_param stdout 1
+    procd_set_param stderr 1
+    procd_close_instance
+}
+EOF
+
+chmod +x /etc/init.d/rnsd
+/etc/init.d/rnsd enable
+/etc/init.d/rnsd start
+
+Verify Reticulum is running:
+----------------------------
+rnstatus -a
+
+Expected output:
+ AutoInterface[HaLow Mesh Bridge]
+    Status    : Up
+    Mode      : Full
+    Rate      : 10.00 Mbps
+    Peers     : 1 reachable    <-- This confirms mesh connectivity!
+
+================================================================================
+                     6. UNDERSTANDING THE NETWORK STACK
+================================================================================
+
+Reticulum Interface Types:
+--------------------------
+| Type            | Radio Control | Use Case                              |
+|-----------------|---------------|---------------------------------------|
+| AutoInterface   | No            | Auto-discovery over existing networks |
+| UDPInterface    | No            | UDP broadcast/unicast over IP         |
+| TCPInterface    | No            | Point-to-point over internet          |
+| RNodeInterface  | YES           | Direct LoRa radio control             |
+| SerialInterface | No            | KISS modems, packet radio TNCs        |
+
+In our setup, we use AutoInterface + UDPInterface because:
+- HaLow radio is managed by OpenWrt/Linux (not Reticulum)
+- We're running Reticulum OVER the existing IP network
+- Radio parameters (frequency, channel, etc.) are in /etc/config/wireless
+
+If you wanted Reticulum to directly control a radio, you'd use RNodeInterface
+with an RNode device (see Section 10).
+
+HaLow Radio Configuration (OpenWrt):
+------------------------------------
+Location: /etc/config/wireless
+
+config wifi-device 'radio2'
+    option type 'morse'
+    option band 's1g'
+    option hwmode '11ah'
+    option country 'US'
+    option channel '28'              # 916 MHz
+
+config wifi-iface 'default_radio2'
+    option mode 'mesh'
+    option device 'radio2'
+    option network 'ahwlan'
+    option encryption 'sae'          # WPA3
+    option key 'havenmesh'
+    option mesh_id 'haven'
+
+Bridge Configuration:
+---------------------
+Location: /etc/config/network
+
+config interface 'ahwlan'
+    option proto 'static'
+    option device 'br-ahwlan'
+    option ipaddr '10.41.0.1'        # or 10.41.73.196 for blue
+    option netmask '255.255.0.0'
+    option gateway '10.41.0.1'       # only on non-gateway nodes
+
+config device
+    option name 'br-ahwlan'
+    option type 'bridge'
+    list ports 'bat0'
+
+config interface 'bat0'
+    option proto 'batadv'
+    option routing_algo 'BATMAN_V'
+    option gw_mode 'server'          # 'client' on non-gateway nodes
+
+================================================================================
+                        7. SETTING UP ATAK BRIDGE
+================================================================================
+
+ATAK uses CoT (Cursor on Target) XML messages over UDP. We need a bridge
+to tunnel this traffic over Reticulum.
+
+Create /root/cot_bridge.py on BOTH nodes:
+-----------------------------------------
+#!/usr/bin/env python3
+import RNS
+import socket
+import sys
+import os
+
+COT_LISTEN_PORT = 8087
+COT_FORWARD_PORT = 4242
+APP_NAME = "atak"
+ASPECT = "cot"
+IDENTITY_FILE = "/root/.cot_identity"
+
+# Initialize Reticulum
+reticulum = RNS.Reticulum()
+
+# Load or create persistent identity
+if os.path.exists(IDENTITY_FILE):
+    identity = RNS.Identity.from_file(IDENTITY_FILE)
+    print(f"Loaded identity from {IDENTITY_FILE}", flush=True)
+else:
+    identity = RNS.Identity()
+    identity.to_file(IDENTITY_FILE)
+    print(f"Created new identity: {IDENTITY_FILE}", flush=True)
+
+# Create destination
+destination = RNS.Destination(
+    identity,
+    RNS.Destination.IN,
+    RNS.Destination.SINGLE,
+    APP_NAME, ASPECT
+)
+destination.set_proof_strategy(RNS.Destination.PROVE_ALL)
+
+print(f"Destination hash: {destination.hash.hex()}", flush=True)
+
+# UDP socket
+cot_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+cot_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+cot_socket.bind(("0.0.0.0", COT_LISTEN_PORT))
+cot_socket.settimeout(1.0)
+
+print(f"Listening on UDP port {COT_LISTEN_PORT}", flush=True)
+
+remote_dest = None
+
+def packet_callback(data, packet):
+    print(f"RX from Reticulum: {len(data)} bytes", flush=True)
+    cot_socket.sendto(data, ("127.0.0.1", COT_FORWARD_PORT))
+
+destination.set_packet_callback(packet_callback)
+
+# Announce
+destination.announce()
+print("Announced destination", flush=True)
+
+# Set remote if provided
+if len(sys.argv) > 1:
+    remote_hash = bytes.fromhex(sys.argv[1])
+    print(f"Setting remote: {sys.argv[1]}", flush=True)
+    if not RNS.Transport.has_path(remote_hash):
+        RNS.Transport.request_path(remote_hash)
+        print("Requesting path...", flush=True)
+        import time
+        for i in range(10):
+            time.sleep(1)
+            if RNS.Transport.has_path(remote_hash):
+                break
+
+    remote_identity = RNS.Identity.recall(remote_hash)
+    remote_dest = RNS.Destination(
+        remote_identity,
+        RNS.Destination.OUT,
+        RNS.Destination.SINGLE,
+        APP_NAME, ASPECT
+    )
+    print(f"Remote destination ready", flush=True)
+
+print("Bridge running...", flush=True)
+
+while True:
+    try:
+        data, addr = cot_socket.recvfrom(4096)
+        print(f"UDP RX: {len(data)} bytes from {addr}", flush=True)
+        if remote_dest:
+            packet = RNS.Packet(remote_dest, data)
+            packet.send()
+            print(f"TX to Reticulum: {len(data)} bytes", flush=True)
+    except socket.timeout:
+        pass
+    except Exception as e:
+        print(f"Error: {e}", flush=True)
+
+
+Running the Bridge:
+-------------------
+1. Start on GREEN first (note the destination hash):
+   python3 /root/cot_bridge.py
+   # Output: Destination hash: d9bd729dfc56bcacbe4b007238bf0291
+
+2. Start on BLUE with GREEN's hash:
+   python3 /root/cot_bridge.py d9bd729dfc56bcacbe4b007238bf0291
+
+3. Restart GREEN with BLUE's hash for bidirectional:
+   python3 /root/cot_bridge.py a98064462a184ee6a02228629e1390cf
+
+================================================================================
+                         8. TESTING THE SETUP
+================================================================================
+
+Test 1: Verify Reticulum Connectivity
+-------------------------------------
+On each node:
+rnstatus -a
+
+Look for:
+- "Peers: 1 reachable" on AutoInterface
+- Both nodes should see each other
+
+Test 2: Send Test CoT Message
+-----------------------------
+On GREEN:
+python3 << 'EOF'
+import socket
+cot = b'<event version="2.0" uid="TEST-001" type="a-f-G"><point lat="37.7749" lon="-122.4194"/></event>'
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.sendto(cot, ("127.0.0.1", 8087))
+print(f"Sent {len(cot)} bytes")
+EOF
+
+Check BLUE's log:
+tail /tmp/cot_blue.log
+# Should show: RX from Reticulum: XX bytes
+
+Test 3: Configure ATAK
+----------------------
+On Android device:
+1. Connect to green-5ghz, green-2.4ghz, or blue-5ghz WiFi
+2. Open ATAK
+3. Settings -> Network Preferences -> Network Connection Preferences
+4. Add Streaming Connection:
+   - Protocol: UDP
+   - Address: 10.41.0.1 (green) or 10.41.73.196 (blue)
+   - Port: 8087
+5. Drop a marker on the map
+6. Verify it appears on ATAK connected to the OTHER node
+
+================================================================================
+                    9. RNODE VS HALOW: WHEN TO USE EACH
+================================================================================
+
+HaLow (802.11ah) - What We Used:
+--------------------------------
+Pros:
+- Higher bandwidth (up to 32 Mbps)
+- Standard WiFi mesh protocols (BATMAN-adv)
+- Easy client connectivity (phones connect directly)
+- Sub-1GHz for better penetration than 2.4/5GHz
+
+Cons:
+- Requires specific hardware (Morse Micro chips)
+- Limited availability
+- Higher power consumption than LoRa
+
+Best for:
+- Base stations / fixed infrastructure
+- Higher throughput requirements
+- Areas with power available
+
+RNode (LoRa):
+-------------
+Pros:
+- Extreme range (10+ km line of sight)
+- Very low power consumption
+- DIY-friendly (ESP32 + LoRa module)
+- Reticulum controls radio directly
+
+Cons:
+- Low bandwidth (typically 1-10 kbps)
+- Requires RNodeInterface in Reticulum
+- Point-to-point or simple star topology
+
+Best for:
+- Long-range links
+- Battery-powered/solar deployments
+- Remote sensors
+- Emergency backup links
+
+Hybrid Approach:
+----------------
+Use HaLow for local mesh backbone + RNode for long-range links to remote sites.
+
+================================================================================
+                    10. BUILDING AN RNODE (LORA OPTION)
+================================================================================
+
+If you want to add LoRa capability (for longer range or as backup), you can
+build an RNode device.
+
+Hardware Options:
+-----------------
+1. LilyGO T-Beam (ESP32 + SX1276/SX1262) - Recommended
+2. Heltec LoRa 32 V3
+3. RAK4631 (nRF52840 + SX1262)
+4. DIY: ESP32 + RFM95W/SX1276 module
+
+Flashing RNode Firmware:
+------------------------
+# Install rnodeconf
+pip3 install rns
+
+# Flash the device (replace /dev/ttyUSB0 with your port)
+rnodeconf /dev/ttyUSB0 --autoinstall
+
+# Follow prompts to select board type and frequency band
+
+RNode Reticulum Configuration:
+------------------------------
+Add to ~/.reticulum/config:
+
+[[RNode LoRa]]
+  type = RNodeInterface
+  enabled = True
+  port = /dev/ttyUSB0
+  frequency = 915000000      # 915 MHz (US)
+  bandwidth = 125000         # 125 kHz
+  txpower = 17               # dBm (max 22 for most modules)
+  spreadingfactor = 8        # 7-12 (higher = longer range, slower)
+  codingrate = 5             # 5-8 (higher = more error correction)
+
+Frequency Bands (check local regulations):
+------------------------------------------
+- US: 902-928 MHz (915 MHz common)
+- EU: 863-870 MHz (868 MHz common)
+- AU: 915-928 MHz
+- Asia: varies by country
+
+================================================================================
+                         11. TROUBLESHOOTING
+================================================================================
+
+Problem: Nodes don't see each other
+-----------------------------------
+1. Check HaLow mesh:
+   iwinfo wlan0 info
+   # Should show "haven" mesh with signal
+
+2. Check BATMAN:
+   batctl o
+   # Should show originator table with other node
+
+3. Check bridge:
+   brctl show br-ahwlan
+   # Should list bat0, wlan0, etc.
+
+4. Ping test:
+   ping 10.41.0.1 (from blue)
+   ping 10.41.73.196 (from green)
+
+Problem: Reticulum interfaces down
+----------------------------------
+1. Restart rnsd:
+   killall rnsd; rnsd
+
+2. Check config syntax:
+   cat ~/.reticulum/config
+
+3. Check for port conflicts:
+   netstat -tuln | grep 4242
+
+Problem: ATAK not receiving markers
+-----------------------------------
+1. Verify CoT bridge is running:
+   ps | grep cot_bridge
+
+2. Check bridge logs:
+   tail -f /tmp/cot_green.log
+   tail -f /tmp/cot_blue.log
+
+3. Verify UDP port is open:
+   netstat -tuln | grep 8087
+
+4. Check ATAK network settings point to correct IP/port
+
+Problem: No internet on mesh point (blue)
+-----------------------------------------
+1. Check default gateway:
+   ip route
+   # Should show: default via 10.41.0.1
+
+2. Add gateway if missing:
+   uci set network.ahwlan.gateway='10.41.0.1'
+   uci commit network
+   /etc/init.d/network restart
+
+================================================================================
+                       12. ADVANCED CONFIGURATION
+================================================================================
+
+Adding More Nodes:
+------------------
+1. Install Reticulum on new node
+2. Configure with same group_id in AutoInterface
+3. Nodes will auto-discover via the mesh
+4. For CoT bridge, create mesh of destinations or use multicast
+
+Security Hardening:
+-------------------
+1. Change default passwords!
+2. Enable firewall rules for Reticulum ports
+3. Consider using Reticulum's built-in encryption
+4. Use WPA3-SAE for HaLow mesh (already configured)
+
+Performance Tuning:
+-------------------
+1. Adjust BATMAN-adv orig_interval for faster convergence
+2. Tune HaLow beacon_int for battery vs responsiveness
+3. Consider dedicated management VLAN
+
+Monitoring:
+-----------
+# Reticulum stats
+rnstatus -a
+
+# BATMAN mesh status
+batctl o       # originators
+batctl n       # neighbors
+batctl gwl     # gateway list
+
+# HaLow radio stats
+iwinfo wlan0 info
+iwinfo wlan0 assoclist
+
+================================================================================
+                              QUICK REFERENCE
+================================================================================
+
+Node IPs:
+- GREEN (meshgate): 10.41.0.1
+- BLUE (mesh point): 10.41.73.196
+
+SSH Access:
+- ssh root@10.41.0.1 (pw: green)
+- ssh root@10.41.73.196 (pw: blue)
+
+Key Commands:
+- rnstatus -a          : Reticulum interface status
+- rnpath -t            : Show path table
+- iwinfo wlan0 info    : HaLow radio status
+- batctl o             : BATMAN mesh status
+
+Key Files:
+- ~/.reticulum/config  : Reticulum configuration
+- /root/cot_bridge.py  : ATAK CoT bridge script
+- /etc/config/wireless : HaLow radio config
+- /etc/config/network  : Bridge/IP config
+
+Ports:
+- 4242/UDP : Reticulum UDP interface
+- 8087/UDP : ATAK CoT bridge
+- 37428    : Reticulum instance control
+
+================================================================================
+                              RESOURCES
+================================================================================
+
+Reticulum:
+- https://reticulum.network
+- https://github.com/markqvist/Reticulum
+- https://markqvist.github.io/Reticulum/manual/
+
+RNode:
+- https://unsigned.io/rnode/
+- https://github.com/markqvist/RNode_Firmware
+
+ATAK:
+- https://tak.gov (official)
+- https://www.civtak.org (civilian)
+
+Haven / HaLow:
+- Morse Micro: https://www.morsemicro.com
+- 802.11ah specification
+
+================================================================================
+                         END OF GUIDE
+================================================================================
+
+Questions? Comments? Find me on YouTube!
+
+License: CC BY-SA 4.0 - Share freely with attribution

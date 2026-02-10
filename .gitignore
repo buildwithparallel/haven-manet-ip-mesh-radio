@@ -1,0 +1,62 @@
+## OS / System
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+## Python / General build artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.log
+
+## Virtual environments
+venv/
+.venv/
+env/
+.env
+.env.*/
+.python-version
+
+## Node / JS (harmless if unused)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-lock.yaml
+.pnpm-store/
+
+## Editor / IDE
+.vscode/
+.idea/
+*.iml
+*.swp
+*.swo
+*.swn
+*.bak
+
+## AI assistant / tooling
+.cursor/
+.cursorrules
+AGENTS.md
+
+.claude/
+.claude*
+claude.config.*
+claude.json
+.clinerules
+*.claude.md
+
+## Misc local only
+*.tmp
+*.temp
+*.local
+.cache/
+cache/
