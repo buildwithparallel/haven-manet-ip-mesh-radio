@@ -21,14 +21,14 @@ The **Haven Point** is a mesh extender node that connects to the Haven Gate over
                 [Haven Gate (GREEN)]
                    10.41.0.1
                         │
-                        │ HaLow 916 MHz Mesh
+                        │ HaLow Sub-1GHz Mesh
                         ▼
 ┌───────────────────────────────────────┐
 │           Haven Point (BLUE)          │
 │                                       │
 │  br-ahwlan: 10.41.73.196/16          │
 │    ├── bat0 (BATMAN-adv)             │
-│    ├── wlan0 (HaLow 916MHz mesh)     │
+│    ├── wlan0 (HaLow sub-1GHz mesh)   │
 │    └── phy1-ap0 (5GHz AP)            │
 └───────────────────────────────────────┘
                         │
@@ -46,12 +46,14 @@ The primary backhaul radio connecting to other Haven nodes.
 | Interface | wlan0 |
 | Driver | morse (Morse Micro) |
 | Hardware | Morse Micro SPI-MM601X |
-| Frequency | 916 MHz (Channel 28) |
+| Frequency | Must match Gate node |
 | Mode | Mesh Point |
 | Mesh ID | haven |
 | Encryption | WPA3 SAE (CCMP) |
 | Key | havenmesh |
 | Beacon Interval | 1000ms |
+
+**Important**: The HaLow channel and width must match the Gate node exactly for mesh connectivity. See [haven-gate.md](haven-gate.md) for frequency band options.
 
 ```bash
 # Check HaLow link quality

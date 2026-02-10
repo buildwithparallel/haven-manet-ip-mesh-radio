@@ -28,12 +28,12 @@ Internet
 │                                       │
 │  br-ahwlan: 10.41.0.1/16             │
 │    ├── bat0 (BATMAN-adv)             │
-│    ├── wlan0 (HaLow 916MHz mesh)     │
+│    ├── wlan0 (HaLow sub-1GHz mesh)   │
 │    ├── phy1-ap0 (5GHz AP)            │
 │    └── phy2-ap0 (2.4GHz AP)          │
 └───────────────────────────────────────┘
     │
-    ▼ HaLow 916 MHz Mesh
+    ▼ HaLow Sub-1GHz Mesh
 [Other Haven Nodes]
 ```
 
@@ -47,12 +47,38 @@ The primary backhaul radio operating in sub-1GHz spectrum for long-range mesh co
 | Interface | wlan0 |
 | Driver | morse (Morse Micro) |
 | Hardware | Morse Micro SPI-MM601X |
-| Frequency | 916 MHz (Channel 28) |
+| Frequency | Region-dependent (see below) |
 | Mode | Mesh Point |
 | Mesh ID | haven |
 | Encryption | WPA3 SAE (CCMP) |
 | Key | havenmesh |
 | Beacon Interval | 1000ms |
+
+#### HaLow Frequency Bands by Region
+
+| Region | Frequency Range | Example Channels |
+|--------|-----------------|------------------|
+| US/FCC | 902-928 MHz | 1-51 |
+| EU/ETSI | 863-868 MHz | Varies |
+| Japan | 920-928 MHz | Varies |
+| Australia | 915-928 MHz | Varies |
+
+#### Channel Widths
+
+| Width | Throughput | Range | Best For |
+|-------|------------|-------|----------|
+| 1 MHz | ~1.5 Mbps | Maximum | Long-range backhaul |
+| 2 MHz | ~4 Mbps | Very Long | Balanced range/speed |
+| 4 MHz | ~15 Mbps | Long | Higher throughput |
+| 8 MHz | ~32 Mbps | Medium | Local high-speed |
+
+Configure frequency via OpenWrt:
+```bash
+uci set wireless.radio2.channel='28'     # Set channel number
+uci set wireless.radio2.htmode='HT20'    # Set channel width (1/2/4/8 MHz)
+uci commit wireless
+wifi reload
+```
 
 ```bash
 # OpenWrt wireless config
@@ -135,7 +161,7 @@ Reticulum network stack runs as a transport daemon.
 - Service: `/etc/init.d/rnsd`
 - Status: `rnstatus`
 
-See [Reticulum/README.md](Reticulum/README.md) for details.
+See [../Reticulum/README.md](../Reticulum/README.md) for details.
 
 ### ATAK Bridge
 CoT bridge for ATAK/CivTAK integration over Reticulum.
@@ -144,7 +170,7 @@ CoT bridge for ATAK/CivTAK integration over Reticulum.
 - Listens: Multicast 239.2.3.1:6969
 - Forwards to: Reticulum broadcast destination
 
-See [Reticulum/ATAK.md](Reticulum/ATAK.md) for details.
+See [../atak/README.md](../atak/README.md) for details.
 
 ## Management
 
@@ -181,4 +207,8 @@ tail -f /tmp/bridge.log
 ### HaLow Mesh Not Forming
 1. Verify mesh ID matches on all nodes: `iwinfo wlan0 info`
 2. Check encryption key matches
-3. Verify channel is the same (28)
+3. Verify channel and width are identical on all nodes:
+   ```bash
+   uci get wireless.radio2.channel
+   uci get wireless.radio2.htmode
+   ```

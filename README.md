@@ -1,192 +1,196 @@
 # Haven MANET IP Mesh Radio
 
-A complete guide for building **Haven-style MANET (Mobile Ad-hoc Network) mesh radio** networks using HaLow (802.11ah) radios, Reticulum encrypted networking, and ATAK integration.
+Build decentralized, long-range mesh networks with **Haven** - a complete open-source solution for creating self-healing IP networks that share internet access across kilometers without any central infrastructure.
 
-## Overview
+## What is Haven?
 
-Haven nodes create a self-healing mesh network operating on 916 MHz (sub-1GHz spectrum) with multi-kilometer range. The network supports:
+Haven is a mesh networking platform that combines:
 
-- **Encrypted communications** via Reticulum
-- **ATAK/CivTAK integration** for situational awareness
-- **Automatic mesh routing** via BATMAN-adv
-- **Internet sharing** across the mesh
+- **HaLow radios** (802.11ah) operating in sub-1GHz spectrum for multi-kilometer range
+- **BATMAN-adv** for automatic Layer 2 mesh routing
+- **OpenMANET** firmware (OpenWrt-based) for reliable embedded networking
+- **Optional Reticulum** for encrypted overlay communications
+- **Optional ATAK/CivTAK** integration for situational awareness
 
-```
-                         Internet
-                             │
-                             ▼
-┌────────────────────────────────────────────────────────────────┐
-│                    Haven Gate (GREEN)                          │
-│              Gateway Node with Internet Uplink                 │
-│                                                                │
-│   External IP: 192.168.0.21    Mesh IP: 10.41.0.1             │
-│   Radios: HaLow 916MHz + 5GHz AP + 2.4GHz AP                  │
-└────────────────────────────────────────────────────────────────┘
-                             │
-                             │ HaLow Mesh (916 MHz)
-                             │ Range: 1-10+ km
-                             ▼
-┌────────────────────────────────────────────────────────────────┐
-│                   Haven Point (BLUE)                           │
-│                 Mesh Extender Node                             │
-│                                                                │
-│   Mesh IP: 10.41.73.196    Gateway: 10.41.0.1                 │
-│   Radios: HaLow 916MHz + 5GHz AP                              │
-└────────────────────────────────────────────────────────────────┘
-                             │
-                             │ 5GHz WiFi
-                             ▼
-                      [Mobile Devices]
-                     ATAK, Phones, etc.
-```
+### Why Haven?
 
-## Features
-
-| Feature | Description |
-|---------|-------------|
-| **HaLow Mesh** | 802.11ah at 916 MHz for long-range backhaul |
-| **Reticulum** | Encrypted, resilient networking stack |
-| **ATAK Bridge** | Full ATAK/CivTAK support over Reticulum |
-| **Auto-healing** | BATMAN-adv mesh routing |
-| **Multi-hop** | Traffic routes through multiple nodes |
-| **Internet Sharing** | NAT via gateway node |
-
-## Quick Start
-
-### 1. Set Up Gateway Node (Haven Gate)
-See [haven-gate.md](haven-gate.md) for complete configuration.
-
-Key settings:
-- Mesh IP: `10.41.0.1/16`
-- HaLow: Channel 28, Mesh ID "haven"
-- Runs DHCP server
-- NAT for internet access
-
-### 2. Set Up Point Nodes (Haven Point)
-See [haven-point.md](haven-point.md) for complete configuration.
-
-Key settings:
-- Mesh IP: `10.41.x.x/16` (unique per node)
-- Gateway: `10.41.0.1`
-- HaLow: Same channel/mesh ID as Gate
-
-### 3. Enable Reticulum
-See [Reticulum/README.md](Reticulum/README.md) for setup.
-
-```bash
-# On each node
-/etc/init.d/rnsd start
-/etc/init.d/rnsd enable
-rnstatus
-```
-
-### 4. Start ATAK Bridge
-See [Reticulum/ATAK.md](Reticulum/ATAK.md) for details.
-
-```bash
-# On each node
-python3 /root/cot_bridge.py > /tmp/bridge.log 2>&1 &
-```
-
-### 5. Connect ATAK
-1. Connect phone to Haven node WiFi (e.g., `green-5ghz`)
-2. Open ATAK with default settings
-3. Other ATAK users on the mesh will appear automatically
-
-## Documentation
-
-| File | Description |
-|------|-------------|
-| [haven-gate.md](haven-gate.md) | Gateway node configuration |
-| [haven-point.md](haven-point.md) | Point/extender node configuration |
-| [Reticulum/README.md](Reticulum/README.md) | Reticulum setup and operation |
-| [Reticulum/ATAK.md](Reticulum/ATAK.md) | ATAK integration guide |
-| [Reticulum/cot_bridge.py](Reticulum/cot_bridge.py) | Bridge script for nodes |
-
-## Hardware
-
-### Tested Platform
-- **SBC**: Raspberry Pi 4/CM4
-- **HaLow Radio**: Morse Micro MM601X (SPI)
-- **5GHz Radio**: Cypress CYW43455 (onboard)
-- **2.4GHz Radio**: RT5370 USB (optional)
-- **OS**: OpenWrt
-
-### Radio Specifications
-
-| Radio | Band | Range | Throughput |
-|-------|------|-------|------------|
-| HaLow (802.11ah) | 916 MHz | 1-10+ km | 32.5 Mbps |
-| 5GHz WiFi | 5.18 GHz | 50-100m | 300+ Mbps |
-| 2.4GHz WiFi | 2.4 GHz | 100-200m | 72 Mbps |
+| Feature | Benefit |
+|---------|---------|
+| **Decentralized** | No central server, no single point of failure |
+| **Long Range** | 1-10+ km node-to-node with HaLow radios |
+| **Self-Healing** | Automatic route discovery and failover |
+| **Internet Sharing** | One uplink serves the entire mesh |
+| **Fully Open Source** | No proprietary lock-in, audit everything |
+| **Multi-hop** | Traffic routes through intermediate nodes |
+| **Low Power** | Sub-1GHz radios are power efficient |
 
 ## Network Architecture
 
-### Layer 2 (BATMAN-adv)
-- All nodes form a Layer 2 mesh
-- Automatic neighbor discovery
-- Self-healing routing
-- Bridge interface: `br-ahwlan`
+```
+                              Internet
+                                  │
+                                  ▼
+    ┌─────────────────────────────────────────────────────────┐
+    │                  HAVEN GATE (Gateway)                   │
+    │                                                         │
+    │   ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐   │
+    │   │  eth0   │  │  HaLow  │  │  5GHz   │  │  2.4GHz │   │
+    │   │ uplink  │  │  mesh   │  │   AP    │  │   AP    │   │
+    │   └─────────┘  └─────────┘  └─────────┘  └─────────┘   │
+    │        │            │            │            │         │
+    │        └────────────┴────────────┴────────────┘         │
+    │                    br-ahwlan bridge                     │
+    │                    10.41.0.1/16                         │
+    │                    DHCP Server                          │
+    └─────────────────────────────────────────────────────────┘
+                                  │
+                                  │ HaLow Sub-1GHz Mesh
+                                  │ (1-10+ km range)
+                                  ▼
+    ┌─────────────────────────────────────────────────────────┐
+    │                  HAVEN POINT (Extender)                 │
+    │                                                         │
+    │             ┌─────────┐          ┌─────────┐            │
+    │             │  HaLow  │          │  5GHz   │            │
+    │             │  mesh   │          │   AP    │            │
+    │             └─────────┘          └─────────┘            │
+    │                  │                    │                 │
+    │                  └────────────────────┘                 │
+    │                    br-ahwlan bridge                     │
+    │                    10.41.x.x/16                         │
+    └─────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+                           [Mobile Devices]
+                          Phones, Laptops, ATAK
+```
 
-### Layer 3 (IP)
-- Subnet: `10.41.0.0/16`
-- Gateway node provides DHCP
-- NAT for internet access
+## Quick Start
 
-### Layer 4+ (Reticulum)
-- Encrypted overlay network
-- Application-layer routing
-- Works over any transport
+### Automated Setup (Recommended)
+
+Run these scripts on fresh OpenMANET installs to configure everything automatically:
+
+**Gateway Node (first node with internet):**
+```bash
+curl -sL https://raw.githubusercontent.com/YOUR_REPO/haven-manet-ip-mesh-radio/main/scripts/setup-haven-gate.sh -o setup.sh
+vi setup.sh  # Edit configuration at top (passwords, channel, etc.)
+sh setup.sh && reboot
+```
+
+**Point Nodes (mesh extenders):**
+```bash
+curl -sL https://raw.githubusercontent.com/YOUR_REPO/haven-manet-ip-mesh-radio/main/scripts/setup-haven-point.sh -o setup.sh
+vi setup.sh  # Edit configuration (unique hostname/IP for each node)
+sh setup.sh && reboot
+```
+
+After reboot, enable services:
+```bash
+/etc/init.d/rnsd enable && /etc/init.d/rnsd start
+/etc/init.d/cot_bridge enable && /etc/init.d/cot_bridge start
+```
+
+See [scripts/README.md](scripts/README.md) for detailed options.
+
+### Manual Setup
+
+For manual configuration or custom setups:
+
+1. **Gateway Node**: [docs/haven-gate.md](docs/haven-gate.md)
+2. **Point Nodes**: [docs/haven-point.md](docs/haven-point.md)
+3. **Reticulum** (optional): [Reticulum/README.md](Reticulum/README.md)
+4. **ATAK Integration** (optional): [atak/README.md](atak/README.md)
+
+## HaLow (802.11ah) Radio Specifications
+
+HaLow operates in sub-1GHz ISM bands, providing significantly greater range than traditional WiFi.
+
+### Supported Frequency Bands
+
+| Region | Frequency Range | Common Channels |
+|--------|-----------------|-----------------|
+| US/FCC | 902-928 MHz | 1-51 |
+| EU/ETSI | 863-868 MHz | Varies |
+| Japan | 920-928 MHz | Varies |
+| Australia | 915-928 MHz | Varies |
+
+### Channel Widths
+
+| Width | Throughput | Range | Use Case |
+|-------|------------|-------|----------|
+| 1 MHz | ~1.5 Mbps | Maximum | Long-range backhaul |
+| 2 MHz | ~4 Mbps | Very Long | Balanced |
+| 4 MHz | ~15 Mbps | Long | Higher throughput |
+| 8 MHz | ~32 Mbps | Medium | Local high-speed |
+
+### Current Configuration
+- **Channel**: 28 (916 MHz center frequency)
+- **Width**: 2 MHz (HT20)
+- **Throughput**: ~32.5 Mbps
+- **Encryption**: WPA3 SAE (CCMP)
+
+## Software Stack
+
+All components are open source:
+
+| Component | Version | Description |
+|-----------|---------|-------------|
+| **OpenMANET** | 24.10 (1.6.1) | OpenWrt-based mesh firmware |
+| **OpenWrt** | 24.10 | Base embedded Linux distribution |
+| **Linux Kernel** | 6.6.102 | Operating system kernel |
+| **Morse Micro Driver** | 1.16.4 | HaLow radio driver |
+| **BATMAN-adv** | 2025.4 | Layer 2 mesh routing protocol |
+| **Python** | 3.11.14 | Runtime for Reticulum |
+| **Reticulum** | 1.1.3 | Encrypted networking stack |
+
+## Hardware Requirements
+
+### Tested Platform
+- **SBC**: Raspberry Pi CM4 / Pi 4
+- **HaLow Radio**: Morse Micro MM601X (SPI interface)
+- **5GHz WiFi**: Cypress CYW43455 (onboard on Pi)
+- **2.4GHz WiFi**: RT5370 USB adapter (optional)
+
+### Minimum Requirements
+- ARM or x86 device with SPI interface
+- HaLow radio module (Morse Micro recommended)
+- Standard WiFi for client access
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [scripts/README.md](scripts/README.md) | **Automated setup scripts** |
+| [docs/haven-gate.md](docs/haven-gate.md) | Gateway node manual configuration |
+| [docs/haven-point.md](docs/haven-point.md) | Point/extender node manual configuration |
+| [Reticulum/README.md](Reticulum/README.md) | Encrypted communications layer |
+| [atak/README.md](atak/README.md) | ATAK/CivTAK integration |
+
+## Use Cases
+
+- **Disaster Response**: Deploy mesh networks where infrastructure is damaged
+- **Remote Operations**: Connect sites across kilometers without internet
+- **Events**: Temporary networks for large gatherings
+- **Maritime**: Ship-to-ship and ship-to-shore communications
+- **Agriculture**: Connect sensors and equipment across large properties
+- **Community Networks**: Neighborhood internet sharing
 
 ## Security
 
-| Layer | Encryption |
+| Layer | Protection |
 |-------|------------|
-| HaLow Mesh | WPA3 SAE (CCMP) |
-| Reticulum | Curve25519, AES-128 |
-| ATAK (optional) | Built-in encryption |
-
-## Troubleshooting
-
-### No Mesh Connectivity
-```bash
-# Check HaLow interface
-iwinfo wlan0 info
-
-# Check BATMAN neighbors
-batctl n
-
-# Verify mesh ID matches
-uci get wireless.default_radio2.mesh_id
-```
-
-### No Internet on Point Nodes
-```bash
-# Set gateway
-uci set network.ahwlan.gateway="10.41.0.1"
-uci commit network
-/etc/init.d/network reload
-```
-
-### ATAK Not Seeing Other Users
-```bash
-# Check bridge is running
-ps | grep cot_bridge
-
-# Check Reticulum peers
-rnstatus
-
-# View bridge logs
-tail -f /tmp/bridge.log
-```
+| HaLow Mesh | WPA3 SAE (CCMP) - strongest WiFi encryption |
+| Reticulum | Curve25519 + AES-128 end-to-end encryption |
+| ATAK | Optional additional encryption |
 
 ## Contributing
 
-This is an open documentation project. Contributions welcome:
-- Hardware variations
-- Configuration improvements
-- Bug fixes
-- Additional use cases
+Contributions welcome:
+- Hardware compatibility testing
+- Documentation improvements
+- Bug fixes and features
+- Use case examples
 
 ## License
 
@@ -194,7 +198,9 @@ MIT License - See [LICENSE](LICENSE) file.
 
 ## Acknowledgments
 
-- [Reticulum Network Stack](https://reticulum.network/) by Mark Qvist
+- [OpenMANET](https://openmanet.org/) - Mesh networking firmware
+- [Reticulum](https://reticulum.network/) by Mark Qvist
 - [ATAK](https://tak.gov/) by TAK Product Center
+- [Morse Micro](https://www.morsemicro.com/) - HaLow radio technology
 - [OpenWrt](https://openwrt.org/) Project
 - [BATMAN-adv](https://www.open-mesh.org/) mesh protocol
