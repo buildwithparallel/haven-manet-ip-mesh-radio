@@ -102,7 +102,7 @@ For manual configuration or custom setups:
 1. **Gateway Node**: [docs/haven-gate.md](docs/haven-gate.md)
 2. **Point Nodes**: [docs/haven-point.md](docs/haven-point.md)
 3. **Reticulum** (optional): [Reticulum/README.md](Reticulum/README.md)
-4. **ATAK Integration** (optional): [atak/README.md](atak/README.md)
+4. **ATAK Integration** (optional): [ATAK/README.md](ATAK/README.md)
 
 ## HaLow (802.11ah) Radio Specifications
 
@@ -167,7 +167,7 @@ All components are open source:
 | [docs/haven-gate.md](docs/haven-gate.md) | Gateway node manual configuration |
 | [docs/haven-point.md](docs/haven-point.md) | Point/extender node manual configuration |
 | [Reticulum/README.md](Reticulum/README.md) | Encrypted communications layer |
-| [atak/README.md](atak/README.md) | ATAK/CivTAK integration |
+| [ATAK/README.md](ATAK/README.md) | ATAK/CivTAK integration |
 
 ## Use Cases
 

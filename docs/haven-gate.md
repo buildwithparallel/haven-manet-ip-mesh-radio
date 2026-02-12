@@ -180,7 +180,7 @@ The Gate bridge runs without a peer hash — it listens for inbound links from
 Point nodes. Get its destination hash with `head -1 /tmp/bridge.log` and
 provide it to each Point node during their CoT bridge setup.
 
-See [../atak/README.md](../atak/README.md) for details.
+See [../ATAK/README.md](../ATAK/README.md) for details.
 
 ## Management
 
