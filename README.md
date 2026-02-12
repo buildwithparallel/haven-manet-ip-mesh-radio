@@ -26,6 +26,17 @@ Haven is a mesh networking platform that combines:
 | **Multi-hop** | Traffic routes through intermediate nodes |
 | **Low Power** | Sub-1GHz radios are power efficient |
 
+## Haven Nodes
+
+Haven nodes are compact, rugged units built for field deployment. Each node includes HaLow (sub-1GHz) and WiFi radios, USB and power ports, and versatile mounting (GoPro-style bracket and bolt holes).
+
+![Haven node](assets/node-hero.png)
+
+| | | |
+|:---:|:---:|:---:|
+| ![Node in hand](assets/node-hand.png) | ![Node vehicle mount](assets/node-vehicle-mount.png) | ![Node ports and mount](assets/node-ports-mount.png) |
+| Handheld | Vehicle deployment | Ports and mounting |
+
 ## Network Architecture
 
 ```
