@@ -175,24 +175,28 @@ rnpath -l
 When an ATAK device sends a CoT message:
 
 ```
-1. ATAK sends CoT XML to multicast 239.2.3.1:6969
-2. CoT Bridge receives, compresses with zlib
-3. Bridge creates Reticulum packet
-4. Reticulum encrypts and sends via AutoInterface
-5. Packet travels over HaLow mesh
-6. Remote node's Reticulum receives
-7. Remote CoT Bridge decompresses
-8. Bridge sends to local multicast
-9. Remote ATAK receives CoT
+1. ATAK sends CoT XML to multicast (SA: 239.2.3.1:6969, Chat: 224.10.10.1:17012)
+2. CoT Bridge intercepts multicast, compresses with zlib
+3. Bridge fragments if compressed size > 400 bytes
+4. Bridge sends over encrypted Reticulum link
+5. Reticulum encrypts and transmits via AutoInterface over HaLow mesh
+6. Remote node's Reticulum receives and decrypts
+7. Remote CoT Bridge reassembles fragments, decompresses
+8. Bridge re-publishes to local multicast groups
+9. Remote ATAK devices receive CoT data
 ```
+
+No special ATAK configuration is needed — devices use their default multicast settings. The bridge transparently intercepts and relays traffic.
 
 ## MTU Considerations
 
 Reticulum has a 500-byte packet MTU to support low-bandwidth links like LoRa. For larger ATAK messages:
 
-- The bridge compresses data with zlib (typically 40-60% reduction)
-- Messages exceeding MTU are fragmented and reassembled
-- Fragmentation adds ~10-20ms latency per fragment
+- The bridge compresses data with zlib (typically 1-38% reduction for CoT XML)
+- Messages exceeding 400 bytes after compression are fragmented and reassembled
+- SA beacons (~300-340 bytes) typically fit in a single packet
+- Chat messages (~700-800 bytes) usually require 2 fragments
+- Fragmentation adds ~20ms latency per fragment
 
 ## Troubleshooting
 
