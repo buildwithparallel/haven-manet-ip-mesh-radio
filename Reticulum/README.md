@@ -130,28 +130,39 @@ rnsd &
 
 ## Monitoring
 
-### Check Status
+### Built-in Status
 ```bash
 rnstatus
 ```
 
-Example output:
+### Live Dashboard (rns_status.py)
+
+A live-refreshing dashboard that shows Reticulum status, HaLow radio details, configured interfaces, and real-time data exchange between nodes. See [`scripts/rns_status.py`](../scripts/rns_status.py) for the full script.
+
+```bash
+# Standalone — shows status and waits for peers
+python3 /root/rns_status.py
+
+# Connect to a peer — enables live PING/PONG exchange
+python3 /root/rns_status.py <peer_hash>
 ```
- Shared Instance[rns/default]
-    Status    : Up
-    Serving   : 1 program
-    Rate      : 1.00 Gbps
-    Traffic   : ↑7.54 KB  ↓3.73 KB
 
- AutoInterface[HaLow Mesh Bridge]
-    Status    : Up
-    Mode      : Full
-    Rate      : 10.00 Mbps
-    Peers     : 1 reachable
-    Traffic   : ↑3.73 KB  ↓3.73 KB
+The dashboard displays:
+- Reticulum version, node hash, and link status
+- HaLow radio: hardware, frequency, channel, bit rate, signal strength, encryption
+- Configured Reticulum interfaces (AutoInterface, UDPInterface, etc.)
+- Live packet TX/RX counters and per-peer RTT
 
- Transport Instance running
- Uptime is 8m and 39s
+### Message Transfer Demo
+
+Simple sender/receiver scripts for testing Reticulum links across the mesh. See [`scripts/rns_send.py`](../scripts/rns_send.py) and [`scripts/rns_receive.py`](../scripts/rns_receive.py).
+
+```bash
+# Receiver — prints destination hash, then waits
+python3 /root/rns_receive.py
+
+# Sender — resolves path, establishes link, sends message
+python3 /root/rns_send.py <dest_hash> Your message here
 ```
 
 ### View Paths
