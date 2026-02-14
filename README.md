@@ -90,11 +90,11 @@ wget -O setup.sh https://raw.githubusercontent.com/buildwithparallel/haven-manet
 sh setup.sh && reboot
 ```
 
-**Point Nodes (mesh extenders):**
-```bash
-wget -O setup.sh https://raw.githubusercontent.com/buildwithparallel/haven-manet-ip-mesh-radio/main/scripts/setup-haven-point.sh
-sh setup.sh && reboot
-```
+**Point Nodes (mesh extenders)** — the point node has no internet, so paste the script instead:
+1. Open the [raw setup script](https://raw.githubusercontent.com/buildwithparallel/haven-manet-ip-mesh-radio/main/scripts/setup-haven-point.sh) on your computer
+2. Select all and copy
+3. Paste into the point node's terminal (via LuCI **Services → Terminal** at `http://10.41.254.1`)
+4. After the script finishes, type `reboot`
 
 > After setup, use LuCI's web interface to customize passwords, WiFi SSIDs, and other settings. See [Accessing the Web Interface](#accessing-the-web-interface-luci) below.
 

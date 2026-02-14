@@ -18,24 +18,50 @@ Automated setup scripts for configuring Haven mesh nodes from a fresh OpenMANET 
 
 ## Quick Start
 
-### 1. Gateway Node (with internet)
+### Step 1: Install OpenMANET
 
+**Fresh install:** Flash OpenMANET onto each node's microSD card using Raspberry Pi Imager, then insert the card and power on.
+
+**Upgrading an existing install:** Open LuCI → System → Backup / Flash Firmware → upload the OpenMANET image. **Uncheck "Keep settings"** for a clean slate.
+
+### Step 2: Set Up the Gate Node (green)
+
+This is the node that shares internet with the rest of the mesh.
+
+1. Plug the gate node into your **upstream router via Ethernet**
+2. Find the gate's IP address in your **router's device list**
+3. Open a terminal on the gate — pick one:
+   - **SSH:** `ssh root@<gate-ip>` from your computer
+   - **Browser:** go to `http://<gate-ip>` → **Services → Terminal**
+4. Run the setup script:
 ```bash
 wget -O setup.sh https://raw.githubusercontent.com/buildwithparallel/haven-manet-ip-mesh-radio/main/scripts/setup-haven-gate.sh
-sh setup.sh
-reboot
+sh setup.sh && reboot
 ```
+5. Wait ~60 seconds for reboot
 
-### 2. Point Nodes (mesh extenders)
+### Step 3: Set Up the Point Node (blue)
 
-```bash
-wget -O setup.sh https://raw.githubusercontent.com/buildwithparallel/haven-manet-ip-mesh-radio/main/scripts/setup-haven-point.sh
-sh setup.sh
-reboot
-```
+This node extends the mesh — no internet connection needed.
 
-> After setup, use LuCI's web interface to customize passwords, WiFi SSIDs, and other settings.
-> See [Accessing the Web Interface](#accessing-the-web-interface-luci) below.
+1. Plug Ethernet **directly from your computer to the point node**
+2. Open a browser and go to `http://10.41.254.1`
+3. Go to **Services → Terminal**
+4. The point node has no internet, so you'll need to paste the script:
+   - On your computer, open the [raw setup script](https://raw.githubusercontent.com/buildwithparallel/haven-manet-ip-mesh-radio/main/scripts/setup-haven-point.sh) in a browser tab
+   - Select all and copy
+   - Paste into the point node's terminal and press Enter
+5. After the script finishes, type `reboot` and press Enter
+6. Wait ~60 seconds for reboot
+
+### Step 4: Verify the Mesh
+
+1. Connect to **green-5ghz** WiFi (password: `green-5ghz`)
+2. Browse to **http://10.41.0.2** — if blue's LuCI loads, your mesh is working
+
+### Step 5: Customize
+
+Use LuCI's web interface to change passwords, WiFi SSIDs, and other settings on each node. See [Accessing the Web Interface](#accessing-the-web-interface-luci) below.
 
 ### 3. (Optional) Add Reticulum Encryption
 
