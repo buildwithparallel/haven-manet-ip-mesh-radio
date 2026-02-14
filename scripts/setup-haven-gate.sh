@@ -14,7 +14,7 @@ set -e
 
 # Node identity
 HOSTNAME="green"
-ROOT_PASSWORD="green"
+ROOT_PASSWORD="havengreen"
 
 # Mesh network settings
 MESH_ID="haven"
@@ -53,7 +53,7 @@ fi
 echo "[1/6] Setting hostname and password..."
 uci set system.@system[0].hostname="$HOSTNAME"
 uci commit system
-echo "$ROOT_PASSWORD" | passwd root
+(echo "$ROOT_PASSWORD"; echo "$ROOT_PASSWORD") | passwd root
 
 echo "[2/6] Configuring HaLow mesh radio (802.11ah)..."
 HALOW_RADIO=$(uci show wireless | grep "morse" | head -1 | cut -d. -f2)

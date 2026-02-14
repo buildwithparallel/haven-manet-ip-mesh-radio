@@ -22,7 +22,7 @@ Automated setup scripts for configuring Haven mesh nodes from a fresh OpenMANET 
 
 ```bash
 # Download and edit configuration
-curl -sL https://raw.githubusercontent.com/user/haven-manet-ip-mesh-radio/main/scripts/setup-haven-gate.sh -o setup.sh
+wget -O setup.sh https://raw.githubusercontent.com/buildwithparallel/haven-manet-ip-mesh-radio/main/scripts/setup-haven-gate.sh
 vi setup.sh    # Edit passwords, channel, etc.
 sh setup.sh
 reboot
@@ -32,7 +32,7 @@ reboot
 
 ```bash
 # Download and edit configuration
-curl -sL https://raw.githubusercontent.com/user/haven-manet-ip-mesh-radio/main/scripts/setup-haven-point.sh -o setup.sh
+wget -O setup.sh https://raw.githubusercontent.com/buildwithparallel/haven-manet-ip-mesh-radio/main/scripts/setup-haven-point.sh
 vi setup.sh    # Set unique hostname, IP for each node
 sh setup.sh
 reboot
@@ -41,14 +41,16 @@ reboot
 ### 3. (Optional) Add Reticulum Encryption
 
 ```bash
-curl -sL https://raw.githubusercontent.com/user/haven-manet-ip-mesh-radio/main/scripts/setup-reticulum.sh | sh
+wget -O /tmp/setup-reticulum.sh https://raw.githubusercontent.com/buildwithparallel/haven-manet-ip-mesh-radio/main/scripts/setup-reticulum.sh
+sh /tmp/setup-reticulum.sh
 /etc/init.d/rnsd enable && /etc/init.d/rnsd start
 ```
 
 ### 4. (Optional) Add ATAK Bridge
 
 ```bash
-curl -sL https://raw.githubusercontent.com/user/haven-manet-ip-mesh-radio/main/scripts/setup-cot-bridge.sh | sh
+wget -O /tmp/setup-cot-bridge.sh https://raw.githubusercontent.com/buildwithparallel/haven-manet-ip-mesh-radio/main/scripts/setup-cot-bridge.sh
+sh /tmp/setup-cot-bridge.sh
 /etc/init.d/cot_bridge enable && /etc/init.d/cot_bridge start
 ```
 
