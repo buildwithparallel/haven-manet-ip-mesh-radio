@@ -87,32 +87,38 @@ Run these scripts on fresh OpenMANET installs to configure everything automatica
 **Gateway Node (first node with internet):**
 ```bash
 wget -O setup.sh https://raw.githubusercontent.com/buildwithparallel/haven-manet-ip-mesh-radio/main/scripts/setup-haven-gate.sh
-vi setup.sh  # Edit configuration at top (passwords, channel, etc.)
 sh setup.sh && reboot
 ```
 
 **Point Nodes (mesh extenders):**
 ```bash
 wget -O setup.sh https://raw.githubusercontent.com/buildwithparallel/haven-manet-ip-mesh-radio/main/scripts/setup-haven-point.sh
-vi setup.sh  # Edit configuration (unique hostname/IP for each node)
 sh setup.sh && reboot
 ```
+
+> After setup, use LuCI's web interface to customize passwords, WiFi SSIDs, and other settings. See [Accessing the Web Interface](#accessing-the-web-interface-luci) below.
 
 See [scripts/README.md](scripts/README.md) for detailed options.
 
 ### Accessing the Web Interface (LuCI)
 
-After setup and reboot, manage each node through its web interface.
+After setup and reboot, manage each node through its web interface. Login as `root` with the default password.
 
-**Gate Node (green):**
-1. Connect to **green-5ghz** WiFi (password: `green-5ghz`)
-2. Browse to **http://10.41.0.1**
-3. Login as `root` / `havengreen`
+**Gate Node (green)** — default password: `havengreen`
 
-**Point Node (blue):**
-1. Connect to **green-5ghz** or **blue-5ghz** WiFi
-2. Browse to **http://10.41.0.2**
-3. Login as `root` / `havenblue`
+| Method | Steps |
+|--------|-------|
+| Gate WiFi | Connect to **green-5ghz** (password: `green-5ghz`), browse to **http://10.41.0.1** |
+| Upstream network | Connect to your upstream router's WiFi, find the gate's IP in your router's device list, browse to that IP |
+| Ethernet | Plug directly into the gate's ethernet port, browse to **http://10.41.0.1** |
+
+**Point Node (blue)** — default password: `havenblue`
+
+| Method | Steps |
+|--------|-------|
+| Point WiFi | Connect to **blue-5ghz** (password: `blue-5ghz`), browse to **http://10.41.0.2** |
+| Gate WiFi (via mesh) | Connect to **green-5ghz**, browse to **http://10.41.0.2** |
+| Upstream network (via mesh) | Connect to your upstream router's WiFi, browse to **http://10.41.0.2** |
 
 > **Tip:** If you can reach the point node's LuCI through the gate node's WiFi, your mesh is working.
 
