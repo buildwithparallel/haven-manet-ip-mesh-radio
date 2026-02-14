@@ -117,7 +117,6 @@ After setup and reboot, manage each node through its web interface. Login as `ro
 |--------|-------|
 | Point WiFi | Connect to **blue-5ghz** (password: `blue-5ghz`), browse to **http://10.41.0.2** |
 | Gate WiFi (via mesh) | Connect to **green-5ghz**, browse to **http://10.41.0.2** |
-| Upstream network (via mesh) | Connect to your upstream router's WiFi, browse to **http://10.41.0.2** |
 
 > **Tip:** If you can reach the point node's LuCI through the gate node's WiFi, your mesh is working.
 
