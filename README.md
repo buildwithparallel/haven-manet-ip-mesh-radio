@@ -110,7 +110,6 @@ After setup and reboot, manage each node through its web interface. Login as `ro
 |--------|-------|
 | Gate WiFi | Connect to **green-5ghz** (password: `green-5ghz`), browse to **http://10.41.0.1** |
 | Upstream network | Connect to your upstream router's WiFi, find the gate's IP in your router's device list, browse to that IP |
-| Ethernet | Plug directly into the gate's ethernet port, browse to **http://10.41.0.1** |
 
 **Point Node (blue)** — default password: `havenblue`
 
