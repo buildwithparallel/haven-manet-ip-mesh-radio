@@ -130,6 +130,7 @@ uci commit network
 echo "[5/6] Configuring DHCP server..."
 uci set dhcp.ahwlan=dhcp
 uci set dhcp.ahwlan.interface='ahwlan'
+uci set dhcp.ahwlan.ignore='0'
 uci set dhcp.ahwlan.start="$DHCP_START"
 uci set dhcp.ahwlan.limit="$DHCP_LIMIT"
 uci set dhcp.ahwlan.leasetime="$DHCP_LEASETIME"
