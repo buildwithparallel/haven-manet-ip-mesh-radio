@@ -100,6 +100,22 @@ sh setup.sh && reboot
 
 See [scripts/README.md](scripts/README.md) for detailed options.
 
+### Accessing the Web Interface (LuCI)
+
+After setup and reboot, manage each node through its web interface.
+
+**Gate Node (green):**
+1. Connect to **green-5ghz** WiFi (password: `green-5ghz`)
+2. Browse to **http://10.41.0.1**
+3. Login as `root` / `havengreen`
+
+**Point Node (blue):**
+1. Connect to **green-5ghz** or **blue-5ghz** WiFi
+2. Browse to **http://10.41.0.2**
+3. Login as `root` / `havenblue`
+
+> **Tip:** If you can reach the point node's LuCI through the gate node's WiFi, your mesh is working.
+
 ### Manual Setup
 
 For manual configuration or custom setups:
