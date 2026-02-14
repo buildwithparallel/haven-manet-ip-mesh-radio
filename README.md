@@ -86,22 +86,16 @@ Run these scripts on fresh OpenMANET installs to configure everything automatica
 
 **Gateway Node (first node with internet):**
 ```bash
-curl -sL https://raw.githubusercontent.com/YOUR_REPO/haven-manet-ip-mesh-radio/main/scripts/setup-haven-gate.sh -o setup.sh
+curl -sL https://raw.githubusercontent.com/buildwithparallel/haven-manet-ip-mesh-radio/main/scripts/setup-haven-gate.sh -o setup.sh
 vi setup.sh  # Edit configuration at top (passwords, channel, etc.)
 sh setup.sh && reboot
 ```
 
 **Point Nodes (mesh extenders):**
 ```bash
-curl -sL https://raw.githubusercontent.com/YOUR_REPO/haven-manet-ip-mesh-radio/main/scripts/setup-haven-point.sh -o setup.sh
+curl -sL https://raw.githubusercontent.com/buildwithparallel/haven-manet-ip-mesh-radio/main/scripts/setup-haven-point.sh -o setup.sh
 vi setup.sh  # Edit configuration (unique hostname/IP for each node)
 sh setup.sh && reboot
-```
-
-After reboot, enable services:
-```bash
-/etc/init.d/rnsd enable && /etc/init.d/rnsd start
-/etc/init.d/cot_bridge enable && /etc/init.d/cot_bridge start
 ```
 
 See [scripts/README.md](scripts/README.md) for detailed options.
