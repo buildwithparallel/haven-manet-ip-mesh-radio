@@ -61,7 +61,7 @@ sh /tmp/setup-cot-bridge.sh
 | Setting | Default | Description |
 |---------|---------|-------------|
 | `HOSTNAME` | green | Node hostname |
-| `ROOT_PASSWORD` | green | SSH password |
+| `ROOT_PASSWORD` | havengreen | SSH/LuCI password |
 | `MESH_ID` | haven | Mesh network name |
 | `MESH_KEY` | havenmesh | Mesh encryption key |
 | `MESH_IP` | 10.41.0.1 | Node IP address |
@@ -73,7 +73,7 @@ sh /tmp/setup-cot-bridge.sh
 | Setting | Default | Description |
 |---------|---------|-------------|
 | `HOSTNAME` | blue | Node hostname |
-| `ROOT_PASSWORD` | blue | SSH password |
+| `ROOT_PASSWORD` | havenblue | SSH/LuCI password |
 | `MESH_IP` | 10.41.0.2 | Node IP (unique per node) |
 | `GATEWAY_IP` | 10.41.0.1 | Gate node IP |
 
@@ -94,6 +94,26 @@ sh /tmp/setup-cot-bridge.sh
 | HT20 | 2 MHz | ~4 Mbps | Very Long |
 | HT40 | 4 MHz | ~15 Mbps | Long |
 | HT80 | 8 MHz | ~32 Mbps | Medium |
+
+## Accessing the Web Interface (LuCI)
+
+After setup and reboot, you can manage each node through its web interface.
+
+### Gate Node (green)
+
+1. Connect to **green-5ghz** WiFi (password: `green-5ghz`)
+2. Browse to **http://10.41.0.1**
+3. Login as `root` / `havengreen`
+
+### Point Node (blue)
+
+Connect to **either** node's WiFi — the mesh routes traffic between them:
+
+1. Connect to **green-5ghz** or **blue-5ghz** WiFi
+2. Browse to **http://10.41.0.2**
+3. Login as `root` / `havenblue`
+
+> **Tip:** If you can reach the point node's LuCI through the gate node's WiFi, your mesh is working.
 
 ## After Setup
 
