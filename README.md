@@ -53,7 +53,7 @@ Haven nodes are compact, rugged units built for field deployment. Each node incl
     │        │            │            │            │         │
     │        └────────────┴────────────┴────────────┘         │
     │                    br-ahwlan bridge                     │
-    │                    10.41.0.1/16                         │
+    │                    IP assigned by openmanetd            │
     │                    DHCP Server                          │
     └─────────────────────────────────────────────────────────┘
                                   │
@@ -104,11 +104,13 @@ See [scripts/README.md](scripts/README.md) for detailed options.
 
 After setup and reboot, manage each node through its web interface. Login as `root` with the default password.
 
+> **Note:** The gate's mesh IP may be reassigned by openmanetd after reboot. To find the gate's current mesh IP, run `uci get network.ahwlan.ipaddr` on the gate. Point node IPs are set by the setup script and remain static.
+
 **Gate Node (green)** — default password: `havengreen`
 
 | Method | Steps |
 |--------|-------|
-| Gate WiFi | Connect to **green-5ghz** (password: `green-5ghz`), browse to **http://10.41.0.1** |
+| Gate WiFi | Connect to **green-5ghz** (password: `green-5ghz`), run `uci get network.ahwlan.ipaddr` on the gate to find its mesh IP, browse to that IP |
 | Upstream network | Connect to your upstream router's WiFi, find the gate's IP in your router's device list, browse to that IP |
 
 **Point Node (blue)** — default password: `havenblue`

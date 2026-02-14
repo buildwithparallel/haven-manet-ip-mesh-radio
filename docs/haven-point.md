@@ -10,8 +10,8 @@ The **Haven Point** is a mesh extender node that connects to the Haven Gate over
 |----------|-------|
 | Hostname | blue |
 | Role | Mesh Extender / Access Point |
-| Mesh IP | 10.41.73.196 |
-| Gateway | 10.41.0.1 (Haven Gate) |
+| Mesh IP | 10.41.0.2 (set by setup script) |
+| Gateway | Gate's mesh IP (set by setup script) |
 | SSH | root / blue |
 
 ## Network Architecture
@@ -21,14 +21,14 @@ The **Haven Point** is a mesh extender node that connects to the Haven Gate over
                         │
                         ▼
                 [Haven Gate (GREEN)]
-                   10.41.0.1
+                  <gate-mesh-ip>
                         │
                         │ HaLow Sub-1GHz Mesh
                         ▼
 ┌───────────────────────────────────────┐
 │           Haven Point (BLUE)          │
 │                                       │
-│  br-ahwlan: 10.41.73.196/16          │
+│  br-ahwlan: 10.41.0.2/16             │
 │    ├── bat0 (BATMAN-adv)             │
 │    ├── wlan0 (HaLow sub-1GHz mesh)   │
 │    └── phy1-ap0 (5GHz AP)            │
@@ -37,6 +37,8 @@ The **Haven Point** is a mesh extender node that connects to the Haven Gate over
                         ▼ 5GHz WiFi
                    [Clients]
 ```
+
+> **Note:** The gate's mesh IP is managed by openmanetd and may change — run `uci get network.ahwlan.ipaddr` on the gate to find it. The point node's IP (10.41.0.2) is set by the setup script and remains static.
 
 ## Radio Configuration
 
@@ -90,19 +92,18 @@ All interfaces bridged for Layer 2 connectivity.
 network.ahwlan=interface
 network.ahwlan.proto='static'
 network.ahwlan.device='br-ahwlan'
-network.ahwlan.ipaddr='10.41.73.196'
+network.ahwlan.ipaddr='10.41.0.2'
 network.ahwlan.netmask='255.255.0.0'
-network.ahwlan.gateway='10.41.0.1'
+network.ahwlan.gateway=<gate-mesh-ip>
 network.ahwlan.dns='8.8.8.8 8.8.4.4'
 ```
 
 ### Important: Default Gateway
-Point nodes must have their gateway set to the Gate node for internet access:
+The setup script sets the gateway to the gate's mesh IP. Since openmanetd may reassign the gate's IP, verify the gateway is correct:
 
 ```bash
-uci set network.ahwlan.gateway="10.41.0.1"
-uci commit network
-/etc/init.d/network reload
+uci get network.ahwlan.gateway
+ip route | grep default
 ```
 
 Traffic flow: `Clients → Blue → HaLow Mesh → Green → Internet`
@@ -132,7 +133,7 @@ Configuration:
   [[UDP Broadcast]]
     type = UDPInterface
     enabled = Yes
-    listen_ip = 10.41.73.196
+    listen_ip = 10.41.0.2
     listen_port = 4242
     forward_ip = 10.41.255.255
     forward_port = 4242
@@ -166,17 +167,17 @@ Point nodes don't have external IPs. Access via the Gate node:
 
 ```bash
 # From your computer (via Gate as jump host)
-ssh -o ProxyCommand="ssh -W %h:%p root@192.168.0.21" root@10.41.73.196
+ssh -o ProxyCommand="ssh -W %h:%p root@<gate-upstream-ip>" root@10.41.0.2
 # Password: blue
 
 # Or from the Gate node directly
-ssh root@10.41.73.196
+ssh root@10.41.0.2
 ```
 
 ### Useful Commands
 ```bash
 # Check mesh connectivity
-ping 10.41.0.1              # Ping gate
+ping $(uci get network.ahwlan.gateway)  # Ping gate
 iwinfo wlan0 info           # HaLow link quality
 
 # Check Reticulum
@@ -195,11 +196,12 @@ tail -f /tmp/bridge.log
 1. Check gateway is set:
    ```bash
    ip route | grep default
-   # Should show: default via 10.41.0.1
+   # Should show: default via <gate-mesh-ip>
+   uci get network.ahwlan.gateway
    ```
-2. If missing, add it:
+2. If missing, find the gate's mesh IP (`uci get network.ahwlan.ipaddr` on the gate), then set it:
    ```bash
-   uci set network.ahwlan.gateway="10.41.0.1"
+   uci set network.ahwlan.gateway="<gate-mesh-ip>"
    uci commit network
    /etc/init.d/network reload
    ```

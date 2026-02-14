@@ -72,7 +72,7 @@ The Reticulum configuration file is located at `~/.reticulum/config`.
   [[UDP Broadcast]]
     type = UDPInterface
     enabled = Yes
-    listen_ip = 10.41.0.1
+    listen_ip = <gate-mesh-ip>
     listen_port = 4242
     forward_ip = 10.41.255.255
     forward_port = 4242
@@ -96,11 +96,13 @@ The Reticulum configuration file is located at `~/.reticulum/config`.
   [[UDP Broadcast]]
     type = UDPInterface
     enabled = Yes
-    listen_ip = 10.41.73.196
+    listen_ip = 10.41.0.2
     listen_port = 4242
     forward_ip = 10.41.255.255
     forward_port = 4242
 ```
+
+> **Note:** Replace `<gate-mesh-ip>` with the gate's actual mesh IP. The gate's IP may be reassigned by openmanetd — run `uci get network.ahwlan.ipaddr` on the gate to find it. Point node IPs (e.g. `10.41.0.2`) are set by the setup script and remain static.
 
 ### Interface Types Explained
 
@@ -214,7 +216,7 @@ tcpdump -i br-ahwlan udp port 4242
 
 ### High Latency
 - Check HaLow signal strength: `iwinfo wlan0 info`
-- Verify no packet loss: `ping -c 100 10.41.0.1`
+- Verify no packet loss: `ping -c 100 $(uci get network.ahwlan.gateway)`
 - Large messages require fragmentation - this adds latency
 
 ### Reticulum Won't Start

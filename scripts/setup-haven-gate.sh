@@ -19,7 +19,7 @@ ROOT_PASSWORD="havengreen"
 # Mesh network settings
 MESH_ID="haven"
 MESH_KEY="havenmesh"
-MESH_IP="10.41.0.1"
+MESH_IP="10.41.0.1"           # Initial IP; openmanetd may reassign after boot
 MESH_NETMASK="255.255.0.0"
 
 # HaLow radio settings (802.11ah)

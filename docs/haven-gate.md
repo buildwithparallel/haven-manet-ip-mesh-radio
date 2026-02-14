@@ -10,8 +10,8 @@ The **Haven Gate** is the primary gateway node that provides internet uplink to 
 |----------|-------|
 | Hostname | green |
 | Role | Gateway / Internet Uplink |
-| Mesh IP | 10.41.0.1 |
-| External IP | 192.168.0.21 (DHCP from upstream) |
+| Mesh IP | Assigned by openmanetd (run `uci get network.ahwlan.ipaddr` to check) |
+| External IP | DHCP from upstream router |
 | SSH | root / green |
 
 ## Network Architecture
@@ -21,14 +21,15 @@ Internet
     │
     ▼
 [Upstream Router]
-    │ 192.168.0.0/24
+    │ DHCP
     ▼
-[eth0: 192.168.0.21]
+[eth0: DHCP from upstream]
     │
 ┌───┴───────────────────────────────────┐
 │           Haven Gate (GREEN)          │
 │                                       │
-│  br-ahwlan: 10.41.0.1/16             │
+│  br-ahwlan: <ip assigned by          │
+│              openmanetd>/16           │
 │    ├── bat0 (BATMAN-adv)             │
 │    ├── wlan0 (HaLow sub-1GHz mesh)   │
 │    ├── phy1-ap0 (5GHz AP)            │
@@ -129,13 +130,18 @@ brctl show br-ahwlan
 uci show network.ahwlan
 ```
 
-Configuration:
+Configuration (initial — openmanetd may reassign the IP after boot):
 ```
 network.ahwlan=interface
 network.ahwlan.proto='static'
 network.ahwlan.device='br-ahwlan'
-network.ahwlan.ipaddr='10.41.0.1'
+network.ahwlan.ipaddr=<assigned by openmanetd>
 network.ahwlan.netmask='255.255.0.0'
+```
+
+To check the current IP:
+```bash
+uci get network.ahwlan.ipaddr
 ```
 
 ### DHCP Server
@@ -153,6 +159,7 @@ dhcp.ahwlan.force='1'
 ### Firewall / NAT
 The gate node performs NAT for internet access:
 - Mesh clients (10.41.0.0/16) → NAT → eth0 → Internet
+- The gate's mesh IP is assigned by openmanetd's address reservation system
 
 ## Services
 
@@ -186,7 +193,8 @@ See [../ATAK/README.md](../ATAK/README.md) for details.
 
 ### SSH Access
 ```bash
-ssh root@192.168.0.21
+# Via upstream network (find the gate's IP in your router's device list)
+ssh root@<upstream-ip>
 # Password: green
 ```
 

@@ -89,7 +89,7 @@ sh /tmp/setup-cot-bridge.sh
 | `ROOT_PASSWORD` | havengreen | SSH/LuCI password |
 | `MESH_ID` | haven | Mesh network name |
 | `MESH_KEY` | havenmesh | Mesh encryption key |
-| `MESH_IP` | 10.41.0.1 | Node IP address |
+| `MESH_IP` | 10.41.0.1 | Initial node IP (openmanetd may reassign) |
 | `HALOW_CHANNEL` | 28 | HaLow channel (916 MHz) |
 | `HALOW_HTMODE` | HT20 | Channel width (2 MHz) |
 
@@ -99,8 +99,10 @@ sh /tmp/setup-cot-bridge.sh
 |---------|---------|-------------|
 | `HOSTNAME` | blue | Node hostname |
 | `ROOT_PASSWORD` | havenblue | SSH/LuCI password |
-| `MESH_IP` | 10.41.0.2 | Node IP (unique per node) |
-| `GATEWAY_IP` | 10.41.0.1 | Gate node IP |
+| `MESH_IP` | 10.41.0.2 | Static node IP (unique per point node) |
+| `GATEWAY_IP` | 10.41.0.1 | Gate node IP (openmanetd may reassign on the gate) |
+
+> **Note:** The gate's mesh IP may be reassigned by openmanetd after boot. Point node IPs are static. Run `uci get network.ahwlan.ipaddr` on the gate to find its current IP.
 
 ### HaLow Channel Selection
 
@@ -124,11 +126,13 @@ sh /tmp/setup-cot-bridge.sh
 
 After setup and reboot, you can manage each node through its web interface.
 
+> **Finding the gate's mesh IP:** The gate's IP may be reassigned by openmanetd. Run `uci get network.ahwlan.ipaddr` on the gate to find it. Point node IPs are static (set by the setup script).
+
 **Gate Node (green)** — default password: `havengreen`
 
 | Method | Steps |
 |--------|-------|
-| Gate WiFi | Connect to **green-5ghz** (password: `green-5ghz`), browse to **http://10.41.0.1** |
+| Gate WiFi | Connect to **green-5ghz** (password: `green-5ghz`), run `uci get network.ahwlan.ipaddr` on the gate to find its mesh IP, browse to that IP |
 | Upstream network | Connect to your upstream router's WiFi, find the gate's IP in your router's device list, browse to that IP |
 
 **Point Node (blue)** — default password: `havenblue`
@@ -146,7 +150,7 @@ After setup and reboot, you can manage each node through its web interface.
 ```bash
 iwinfo wlan0 info     # HaLow link quality
 batctl n              # BATMAN-adv neighbors
-ping 10.41.0.1        # Ping gateway
+ping <gate-mesh-ip>   # Ping gateway (find with: uci get network.ahwlan.ipaddr on the gate)
 ```
 
 <img src="../assets/mesh-verify.png" alt="Mesh verification from point node" width="500">
@@ -179,7 +183,7 @@ See the [Haven Guide](https://buildwithparallel.com/products/haven) for video tu
 
 ### No Internet on Point Nodes
 - Verify gateway route: `ip route | grep default`
-- Test: `ping 10.41.0.1` then `ping 8.8.8.8`
+- Test: `ping <gate-mesh-ip>` then `ping 8.8.8.8`
 
 ### Reticulum Issues
 - Check status: `rnstatus`

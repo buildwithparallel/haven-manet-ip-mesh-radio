@@ -19,9 +19,9 @@ ROOT_PASSWORD="havenblue"
 # Mesh network settings - MUST MATCH GATE NODE
 MESH_ID="haven"
 MESH_KEY="havenmesh"
-MESH_IP="10.41.0.2"           # Unique for each point node
+MESH_IP="10.41.0.2"           # Static IP for this point node (unique per node)
 MESH_NETMASK="255.255.0.0"
-GATEWAY_IP="10.41.0.1"        # Haven Gate IP
+GATEWAY_IP="10.41.0.1"        # Gate's mesh IP (openmanetd may reassign on the gate)
 DNS_SERVERS="8.8.8.8 8.8.4.4"
 
 # HaLow radio settings - MUST MATCH GATE NODE
@@ -47,12 +47,12 @@ if [ ! -f /etc/openwrt_release ]; then
     exit 1
 fi
 
-echo "[1/5] Setting hostname and password..."
+echo "[1/6] Setting hostname and password..."
 uci set system.@system[0].hostname="$HOSTNAME"
 uci commit system
 (echo "$ROOT_PASSWORD"; echo "$ROOT_PASSWORD") | passwd root
 
-echo "[2/5] Configuring HaLow mesh radio (802.11ah)..."
+echo "[2/6] Configuring HaLow mesh radio (802.11ah)..."
 HALOW_RADIO=$(uci show wireless | grep "morse" | head -1 | cut -d. -f2)
 if [ -z "$HALOW_RADIO" ]; then
     echo "WARNING: No HaLow radio found, skipping"
@@ -78,7 +78,7 @@ else
     uci set wireless.$HALOW_IFACE.beacon_int='1000'
 fi
 
-echo "[3/5] Configuring 5GHz access point..."
+echo "[3/6] Configuring 5GHz access point..."
 WIFI5_RADIO=$(uci show wireless | grep "\.band='5g'" | head -1 | cut -d. -f2)
 if [ -z "$WIFI5_RADIO" ]; then
     echo "WARNING: No 5GHz radio found, skipping"
@@ -102,7 +102,7 @@ else
     uci set wireless.$WIFI5_IFACE.network='ahwlan'
 fi
 
-echo "[4/5] Configuring bridge and BATMAN-adv..."
+echo "[4/6] Configuring bridge and BATMAN-adv..."
 uci set network.ahwlan=interface
 uci set network.ahwlan.proto='static'
 uci set network.ahwlan.ipaddr="$MESH_IP"
@@ -126,11 +126,15 @@ uci set network.ahwlan_dev.type='bridge'
 uci add_list network.ahwlan_dev.ports='bat0' 2>/dev/null || true
 uci commit network
 
-echo "[5/5] Disabling DHCP (Gate handles this)..."
+echo "[5/6] Disabling DHCP (Gate handles this)..."
 uci set dhcp.ahwlan=dhcp
 uci set dhcp.ahwlan.interface='ahwlan'
 uci set dhcp.ahwlan.ignore='1'
 uci commit dhcp
+
+echo "[6/6] Configuring firewall..."
+uci add_list firewall.@zone[0].network='ahwlan' 2>/dev/null || true
+uci commit firewall
 
 uci commit wireless
 
