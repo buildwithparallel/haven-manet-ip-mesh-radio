@@ -44,7 +44,7 @@ Haven nodes are compact, rugged units built for field deployment. Each node incl
                                   │
                                   ▼
     ┌─────────────────────────────────────────────────────────┐
-    │                  HAVEN GATE (Gateway)                   │
+    │              HAVEN GATE — green (Gateway)                │
     │                                                         │
     │   ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐   │
     │   │  eth0   │  │  HaLow  │  │  5GHz   │  │  2.4GHz │   │
@@ -61,7 +61,7 @@ Haven nodes are compact, rugged units built for field deployment. Each node incl
                                   │ (1-10+ km range)
                                   ▼
     ┌─────────────────────────────────────────────────────────┐
-    │                  HAVEN POINT (Extender)                 │
+    │              HAVEN POINT — blue (Extender)               │
     │                                                         │
     │             ┌─────────┐          ┌─────────┐            │
     │             │  HaLow  │          │  5GHz   │            │
@@ -84,13 +84,13 @@ Haven nodes are compact, rugged units built for field deployment. Each node incl
 
 Run these scripts on fresh OpenMANET installs to configure everything automatically:
 
-**Gateway Node (first node with internet):**
+**Gate Node — green (first node, has internet):**
 ```bash
 wget -O setup.sh https://raw.githubusercontent.com/buildwithparallel/haven-manet-ip-mesh-radio/main/scripts/setup-haven-gate.sh
 sh setup.sh && reboot
 ```
 
-**Point Nodes (mesh extenders)** — the point node has no internet, so paste the script instead:
+**Point Node — blue (mesh extender)** — the point node has no internet, so paste the script instead:
 1. Open the [raw setup script](https://raw.githubusercontent.com/buildwithparallel/haven-manet-ip-mesh-radio/main/scripts/setup-haven-point.sh) on your computer
 2. Select all and copy
 3. Paste into the point node's terminal (via LuCI **Services → Terminal** at `http://10.41.254.1`)
@@ -106,20 +106,20 @@ After setup and reboot, manage each node through its web interface. Login as `ro
 
 > **Note:** OpenMANET dynamically assigns mesh IPs on all nodes. To find any node's current mesh IP, run `uci get network.ahwlan.ipaddr` on that node, or check the boot screen on a connected monitor.
 
-#### Finding Point Node IPs from the Gate
+#### Finding Blue (Point) Node IPs from Green (Gate)
 
-The gate node tracks all mesh nodes in its local database. To find the point node's IP, SSH into the gate and run:
+The green (gate) node tracks all mesh nodes in its local database. To find blue's IP, SSH into green and run:
 
 ```bash
 strings /etc/openmanetd/openmanetd.db | grep blue
 ```
 
-This returns the point node's MAC address, hostname, and current mesh IP:
+This returns blue's MAC address, hostname, and current mesh IP:
 ```
 2c:c6:82:8a:2a:f6 blue 10.41.126.198
 ```
 
-Use the IP at the end to access the point node's web interface.
+Use the IP at the end to access blue's web interface.
 
 **Gate Node (green)** — default password: `havengreen`
 
@@ -141,8 +141,8 @@ Use the IP at the end to access the point node's web interface.
 
 For manual configuration or custom setups:
 
-1. **Gateway Node**: [docs/haven-gate.md](docs/haven-gate.md)
-2. **Point Nodes**: [docs/haven-point.md](docs/haven-point.md)
+1. **Gate Node (green)**: [docs/haven-gate.md](docs/haven-gate.md)
+2. **Point Node (blue)**: [docs/haven-point.md](docs/haven-point.md)
 3. **Reticulum** (optional): [Reticulum/README.md](Reticulum/README.md)
 4. **ATAK Integration** (optional): [ATAK/README.md](ATAK/README.md)
 
@@ -206,8 +206,8 @@ All components are open source:
 | Document | Description |
 |----------|-------------|
 | [scripts/README.md](scripts/README.md) | **Automated setup scripts** |
-| [docs/haven-gate.md](docs/haven-gate.md) | Gateway node manual configuration |
-| [docs/haven-point.md](docs/haven-point.md) | Point/extender node manual configuration |
+| [docs/haven-gate.md](docs/haven-gate.md) | Gate node (green) manual configuration |
+| [docs/haven-point.md](docs/haven-point.md) | Point node (blue) manual configuration |
 | [Reticulum/README.md](Reticulum/README.md) | Encrypted communications layer |
 | [ATAK/README.md](ATAK/README.md) | ATAK/CivTAK integration |
 

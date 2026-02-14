@@ -82,7 +82,7 @@ sh /tmp/setup-cot-bridge.sh
 
 ## Configuration Reference
 
-### Gate Node Defaults
+### Gate Node Defaults (green)
 
 | Setting | Default | Description |
 |---------|---------|-------------|
@@ -94,7 +94,7 @@ sh /tmp/setup-cot-bridge.sh
 | `HALOW_CHANNEL` | 28 | HaLow channel (916 MHz) |
 | `HALOW_HTMODE` | HT20 | Channel width (2 MHz) |
 
-### Point Node Defaults
+### Point Node Defaults (blue)
 
 | Setting | Default | Description |
 |---------|---------|-------------|
@@ -128,6 +128,21 @@ sh /tmp/setup-cot-bridge.sh
 After setup and reboot, you can manage each node through its web interface.
 
 > **Finding mesh IPs:** OpenMANET dynamically assigns mesh IPs on all nodes. Run `uci get network.ahwlan.ipaddr` on any node to find its current IP, or check the boot screen on a connected monitor.
+
+#### Finding Blue (Point) Node IPs from Green (Gate)
+
+SSH into green (gate) and run:
+
+```bash
+strings /etc/openmanetd/openmanetd.db | grep blue
+```
+
+This returns blue's MAC address, hostname, and current mesh IP:
+```
+2c:c6:82:8a:2a:f6 blue 10.41.126.198
+```
+
+Use the IP at the end to access blue's web interface.
 
 **Gate Node (green)** — default password: `havengreen`
 
