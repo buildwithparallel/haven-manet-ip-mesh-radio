@@ -106,6 +106,21 @@ After setup and reboot, manage each node through its web interface. Login as `ro
 
 > **Note:** OpenMANET dynamically assigns mesh IPs on all nodes. To find any node's current mesh IP, run `uci get network.ahwlan.ipaddr` on that node, or check the boot screen on a connected monitor.
 
+#### Finding Point Node IPs from the Gate
+
+The gate node tracks all mesh nodes in its local database. To find the point node's IP, SSH into the gate and run:
+
+```bash
+strings /etc/openmanetd/openmanetd.db | grep blue
+```
+
+This returns the point node's MAC address, hostname, and current mesh IP:
+```
+2c:c6:82:8a:2a:f6 blue 10.41.126.198
+```
+
+Use the IP at the end to access the point node's web interface.
+
 **Gate Node (green)** — default password: `havengreen`
 
 | Method | Steps |
