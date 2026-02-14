@@ -82,7 +82,7 @@ else
 fi
 
 echo "[3/6] Configuring 5GHz access point..."
-WIFI5_RADIO=$(uci show wireless | grep -E "brcmfmac|ath10k|mt76" | grep "\.type=" | head -1 | cut -d. -f2)
+WIFI5_RADIO=$(uci show wireless | grep "\.band='5g'" | head -1 | cut -d. -f2)
 if [ -z "$WIFI5_RADIO" ]; then
     echo "WARNING: No 5GHz radio found, skipping"
 else
