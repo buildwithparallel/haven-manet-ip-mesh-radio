@@ -104,7 +104,7 @@ See [scripts/README.md](scripts/README.md) for detailed options.
 
 After setup and reboot, manage each node through its web interface. Login as `root` with the default password.
 
-> **Note:** The gate's mesh IP may be reassigned by openmanetd after reboot. To find the gate's current mesh IP, run `uci get network.ahwlan.ipaddr` on the gate. Point node IPs are set by the setup script and remain static.
+> **Note:** OpenMANET dynamically assigns mesh IPs on all nodes. To find any node's current mesh IP, run `uci get network.ahwlan.ipaddr` on that node, or check the boot screen on a connected monitor.
 
 **Gate Node (green)** — default password: `havengreen`
 
@@ -117,8 +117,8 @@ After setup and reboot, manage each node through its web interface. Login as `ro
 
 | Method | Steps |
 |--------|-------|
-| Point WiFi | Connect to **blue-5ghz** (password: `blue-5ghz`), browse to **http://10.41.0.2** |
-| Gate WiFi (via mesh) | Connect to **green-5ghz**, browse to **http://10.41.0.2** |
+| Point WiFi | Connect to **blue-5ghz** (password: `blue-5ghz`), browse to **http://\<point-mesh-ip\>** |
+| Gate WiFi (via mesh) | Connect to **green-5ghz**, browse to **http://\<point-mesh-ip\>** |
 
 > **Tip:** If you can reach the point node's LuCI through the gate node's WiFi, your mesh is working.
 

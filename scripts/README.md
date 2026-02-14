@@ -57,7 +57,8 @@ This node extends the mesh — no internet connection needed.
 ### Step 4: Verify the Mesh
 
 1. Connect to **green-5ghz** WiFi (password: `green-5ghz`)
-2. Browse to **http://10.41.0.2** — if blue's LuCI loads, your mesh is working
+2. Find the point node's mesh IP (run `uci get network.ahwlan.ipaddr` on the point node, or check its boot screen)
+3. Browse to **http://\<point-mesh-ip\>** — if blue's LuCI loads, your mesh is working
 
 ### Step 5: Customize
 
@@ -99,10 +100,10 @@ sh /tmp/setup-cot-bridge.sh
 |---------|---------|-------------|
 | `HOSTNAME` | blue | Node hostname |
 | `ROOT_PASSWORD` | havenblue | SSH/LuCI password |
-| `MESH_IP` | 10.41.0.2 | Static node IP (unique per point node) |
-| `GATEWAY_IP` | 10.41.0.1 | Gate node IP (openmanetd may reassign on the gate) |
+| `MESH_IP` | 10.41.0.2 | Initial node IP (openmanetd may reassign) |
+| `GATEWAY_IP` | 10.41.0.1 | Initial gate node IP (openmanetd may reassign) |
 
-> **Note:** The gate's mesh IP may be reassigned by openmanetd after boot. Point node IPs are static. Run `uci get network.ahwlan.ipaddr` on the gate to find its current IP.
+> **Note:** OpenMANET's address reservation system manages mesh IPs on all nodes after setup. The defaults above are initial values — the final IPs may differ. Run `uci get network.ahwlan.ipaddr` on any node to find its current mesh IP, or check the boot screen on a connected monitor.
 
 ### HaLow Channel Selection
 
@@ -126,21 +127,21 @@ sh /tmp/setup-cot-bridge.sh
 
 After setup and reboot, you can manage each node through its web interface.
 
-> **Finding the gate's mesh IP:** The gate's IP may be reassigned by openmanetd. Run `uci get network.ahwlan.ipaddr` on the gate to find it. Point node IPs are static (set by the setup script).
+> **Finding mesh IPs:** OpenMANET dynamically assigns mesh IPs on all nodes. Run `uci get network.ahwlan.ipaddr` on any node to find its current IP, or check the boot screen on a connected monitor.
 
 **Gate Node (green)** — default password: `havengreen`
 
 | Method | Steps |
 |--------|-------|
-| Gate WiFi | Connect to **green-5ghz** (password: `green-5ghz`), run `uci get network.ahwlan.ipaddr` on the gate to find its mesh IP, browse to that IP |
+| Gate WiFi | Connect to **green-5ghz** (password: `green-5ghz`), browse to **http://\<gate-mesh-ip\>** |
 | Upstream network | Connect to your upstream router's WiFi, find the gate's IP in your router's device list, browse to that IP |
 
 **Point Node (blue)** — default password: `havenblue`
 
 | Method | Steps |
 |--------|-------|
-| Point WiFi | Connect to **blue-5ghz** (password: `blue-5ghz`), browse to **http://10.41.0.2** |
-| Gate WiFi (via mesh) | Connect to **green-5ghz**, browse to **http://10.41.0.2** |
+| Point WiFi | Connect to **blue-5ghz** (password: `blue-5ghz`), browse to **http://\<point-mesh-ip\>** |
+| Gate WiFi (via mesh) | Connect to **green-5ghz**, browse to **http://\<point-mesh-ip\>** |
 
 > **Tip:** If you can reach the point node's LuCI through the gate node's WiFi, your mesh is working.
 

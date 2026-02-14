@@ -19,9 +19,9 @@ ROOT_PASSWORD="havenblue"
 # Mesh network settings - MUST MATCH GATE NODE
 MESH_ID="haven"
 MESH_KEY="havenmesh"
-MESH_IP="10.41.0.2"           # Static IP for this point node (unique per node)
+MESH_IP="10.41.0.2"           # Initial IP; openmanetd may reassign after boot
 MESH_NETMASK="255.255.0.0"
-GATEWAY_IP="10.41.0.1"        # Gate's mesh IP (openmanetd may reassign on the gate)
+GATEWAY_IP="10.41.0.1"        # Initial gate IP; openmanetd may reassign after boot
 DNS_SERVERS="8.8.8.8 8.8.4.4"
 
 # HaLow radio settings - MUST MATCH GATE NODE

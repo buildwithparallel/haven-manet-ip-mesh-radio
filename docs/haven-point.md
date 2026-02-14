@@ -10,8 +10,8 @@ The **Haven Point** is a mesh extender node that connects to the Haven Gate over
 |----------|-------|
 | Hostname | blue |
 | Role | Mesh Extender / Access Point |
-| Mesh IP | 10.41.0.2 (set by setup script) |
-| Gateway | Gate's mesh IP (set by setup script) |
+| Mesh IP | Assigned by openmanetd (run `uci get network.ahwlan.ipaddr` to check) |
+| Gateway | Assigned by openmanetd (run `uci get network.ahwlan.gateway` to check) |
 | SSH | root / blue |
 
 ## Network Architecture
@@ -28,7 +28,7 @@ The **Haven Point** is a mesh extender node that connects to the Haven Gate over
 ┌───────────────────────────────────────┐
 │           Haven Point (BLUE)          │
 │                                       │
-│  br-ahwlan: 10.41.0.2/16             │
+│  br-ahwlan: <point-mesh-ip>/16       │
 │    ├── bat0 (BATMAN-adv)             │
 │    ├── wlan0 (HaLow sub-1GHz mesh)   │
 │    └── phy1-ap0 (5GHz AP)            │
@@ -38,7 +38,7 @@ The **Haven Point** is a mesh extender node that connects to the Haven Gate over
                    [Clients]
 ```
 
-> **Note:** The gate's mesh IP is managed by openmanetd and may change — run `uci get network.ahwlan.ipaddr` on the gate to find it. The point node's IP (10.41.0.2) is set by the setup script and remains static.
+> **Note:** OpenMANET dynamically assigns mesh IPs on all nodes via its address reservation system. Run `uci get network.ahwlan.ipaddr` on any node to find its current mesh IP.
 
 ## Radio Configuration
 
@@ -92,7 +92,7 @@ All interfaces bridged for Layer 2 connectivity.
 network.ahwlan=interface
 network.ahwlan.proto='static'
 network.ahwlan.device='br-ahwlan'
-network.ahwlan.ipaddr='10.41.0.2'
+network.ahwlan.ipaddr=<assigned by openmanetd>
 network.ahwlan.netmask='255.255.0.0'
 network.ahwlan.gateway=<gate-mesh-ip>
 network.ahwlan.dns='8.8.8.8 8.8.4.4'
@@ -133,7 +133,7 @@ Configuration:
   [[UDP Broadcast]]
     type = UDPInterface
     enabled = Yes
-    listen_ip = 10.41.0.2
+    listen_ip = <point-mesh-ip>
     listen_port = 4242
     forward_ip = 10.41.255.255
     forward_port = 4242
@@ -167,12 +167,14 @@ Point nodes don't have external IPs. Access via the Gate node:
 
 ```bash
 # From your computer (via Gate as jump host)
-ssh -o ProxyCommand="ssh -W %h:%p root@<gate-upstream-ip>" root@10.41.0.2
+ssh -o ProxyCommand="ssh -W %h:%p root@<gate-upstream-ip>" root@<point-mesh-ip>
 # Password: blue
 
 # Or from the Gate node directly
-ssh root@10.41.0.2
+ssh root@<point-mesh-ip>
 ```
+
+Find the point's mesh IP with `uci get network.ahwlan.ipaddr` on the point node, or check the boot screen on a connected monitor.
 
 ### Useful Commands
 ```bash

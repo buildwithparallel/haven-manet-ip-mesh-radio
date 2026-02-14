@@ -96,13 +96,13 @@ The Reticulum configuration file is located at `~/.reticulum/config`.
   [[UDP Broadcast]]
     type = UDPInterface
     enabled = Yes
-    listen_ip = 10.41.0.2
+    listen_ip = <point-mesh-ip>
     listen_port = 4242
     forward_ip = 10.41.255.255
     forward_port = 4242
 ```
 
-> **Note:** Replace `<gate-mesh-ip>` with the gate's actual mesh IP. The gate's IP may be reassigned by openmanetd — run `uci get network.ahwlan.ipaddr` on the gate to find it. Point node IPs (e.g. `10.41.0.2`) are set by the setup script and remain static.
+> **Note:** Replace `<gate-mesh-ip>` and `<point-mesh-ip>` with each node's actual mesh IP. OpenMANET dynamically assigns these — run `uci get network.ahwlan.ipaddr` on any node to find its current IP.
 
 ### Interface Types Explained
 
