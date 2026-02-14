@@ -124,7 +124,7 @@ batctl n              # BATMAN-adv neighbors
 ping 10.41.0.1        # Ping gateway
 ```
 
-![Mesh verification from point node](../assets/mesh-verify.png)
+<img src="../assets/mesh-verify.png" alt="Mesh verification from point node" width="500">
 
 ### Verify Reticulum (if installed)
 ```bash
