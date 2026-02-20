@@ -60,7 +60,7 @@ def link_established(link):
         print(f"  Hops             : {packet.hops}")
         if hasattr(packet, 'raw') and packet.raw:
             print(f"  Raw wire length  : {len(packet.raw)} bytes")
-        if packet.ciphertext:
+        if hasattr(packet, 'ciphertext') and packet.ciphertext:
             print(f"  Ciphertext len   : {len(packet.ciphertext)} bytes")
         print(f"  Plaintext len    : {len(packet.data) if packet.data else 0} bytes")
         if packet.receiving_interface:
@@ -77,7 +77,7 @@ def link_established(link):
             print("  RAW PACKET (as seen on the wire)")
             print("-" * 60)
             hex_dump(packet.raw)
-        if packet.ciphertext:
+        if hasattr(packet, 'ciphertext') and packet.ciphertext:
             print()
             print("  CIPHERTEXT (encrypted payload)")
             print("-" * 60)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reticulum verbose sender — prints full packet details"""
+"""Reticulum verbose sender — prints full packet details with hex dump"""
 import RNS
 import sys
 import time
@@ -10,9 +10,6 @@ if len(sys.argv) < 3:
 
 dest_hash = bytes.fromhex(sys.argv[1])
 message = " ".join(sys.argv[2:])
-
-# Enable verbose Reticulum logging
-RNS.loglevel = RNS.LOG_VERBOSE
 
 reticulum = RNS.Reticulum()
 
@@ -87,8 +84,35 @@ receipt = packet.send()
 
 t_send = time.time() - t0
 
+def hex_dump(data, prefix="  "):
+    """Print a formatted hex dump with ASCII sidebar"""
+    for i in range(0, len(data), 16):
+        chunk = data[i:i+16]
+        hex_part = " ".join(f"{b:02x}" for b in chunk)
+        ascii_part = "".join(chr(b) if 32 <= b < 127 else "." for b in chunk)
+        print(f"{prefix}{i:04x}  {hex_part:<48s}  |{ascii_part}|")
+
 print()
-print("  SENT PACKET DETAILS")
+print("  PLAINTEXT (your message)")
+print("-" * 60)
+hex_dump(message.encode())
+
+if hasattr(packet, 'raw') and packet.raw:
+    print()
+    print("  RAW PACKET (as sent on the wire)")
+    print("-" * 60)
+    print(f"  Total wire bytes : {len(packet.raw)}")
+    hex_dump(packet.raw)
+
+if hasattr(packet, 'ciphertext') and packet.ciphertext:
+    print()
+    print("  CIPHERTEXT (encrypted payload)")
+    print("-" * 60)
+    print(f"  Encrypted bytes  : {len(packet.ciphertext)}")
+    hex_dump(packet.ciphertext)
+
+print()
+print("  PACKET DETAILS")
 print("-" * 60)
 print(f"  Packet hash      : {packet.packet_hash.hex() if packet.packet_hash else 'N/A'}")
 print(f"  Packet type      : {packet.packet_type}")
@@ -96,8 +120,6 @@ print(f"  Transport type   : {packet.transport_type}")
 print(f"  Header type      : {packet.header_type}")
 print(f"  Context          : {packet.context}")
 print(f"  Hops             : {packet.hops}")
-print(f"  Raw length       : {packet.raw_len if hasattr(packet, 'raw_len') else 'N/A'}")
-print(f"  Data length      : {len(packet.data) if packet.data else 0}")
 print(f"  Send time        : {t_send * 1000:.1f}ms")
 print()
 print("  LINK DETAILS")
