@@ -52,9 +52,31 @@ pip3 install rns
 
 ## Configuration
 
-The Reticulum configuration file is located at `~/.reticulum/config`.
+The Reticulum configuration file is located at `/root/.reticulum/config` on each node. Edit it to control which radio or network interface Reticulum uses.
 
-### Configuration (same on all nodes)
+```bash
+vi /root/.reticulum/config
+```
+
+Reticulum is **radio-agnostic**. It doesn't know or care what radio is underneath — it just needs a Linux network interface to bind to. You give it a device name (a bridge, an ethernet adapter, a WiFi interface) and Reticulum uses multicast to auto-discover other nodes on that interface. That's it.
+
+There is nothing HaLow-specific in the Reticulum config. The interface name `[[HaLow Mesh Bridge]]` is just a human-readable label — you could call it `[[My Cool Interface]]` and it would work the same. The `type = AutoInterface` tells Reticulum to use multicast discovery, and `devices = br-ahwlan` tells it which Linux network device to use. Reticulum has no idea what radio is on the other end of that device.
+
+### How HaLow Gets to Reticulum
+
+On Haven nodes, the HaLow radio goes through several layers before Reticulum sees it:
+
+```
+HaLow radio (wlan0)  →  BATMAN mesh (bat0)  →  Linux bridge (br-ahwlan)  →  Reticulum
+```
+
+- **wlan0** — the physical HaLow 916 MHz radio
+- **bat0** — BATMAN-adv mesh routing layer on top of wlan0
+- **br-ahwlan** — a Linux bridge containing bat0, defined in OpenWrt's `/etc/config/network`
+
+Reticulum only sees `br-ahwlan`. It sends multicast packets on that bridge, and they happen to travel over HaLow because that's what's bridged in. If you replaced the HaLow radio with a LoRa adapter or an ethernet cable and bridged it into `br-ahwlan`, Reticulum would work without any config change.
+
+### Default Config (same on all nodes)
 
 ```ini
 [reticulum]
@@ -63,10 +85,11 @@ The Reticulum configuration file is located at `~/.reticulum/config`.
   instance_control_port = 37428
 
 [interfaces]
+  # The name in double brackets is just a label — call it anything
   [[HaLow Mesh Bridge]]
-    type = AutoInterface
+    type = AutoInterface        # Use multicast to find peers
     enabled = Yes
-    devices = br-ahwlan
+    devices = br-ahwlan         # Linux network device to bind to
     group_id = reticulum
 
   [[UDP Broadcast]]
@@ -80,11 +103,27 @@ The Reticulum configuration file is located at `~/.reticulum/config`.
 
 > **Note:** The config is identical on green (gate) and blue (point) nodes. Using `listen_ip = 0.0.0.0` binds to all interfaces, so the config works regardless of which IP openmanetd assigns.
 
+### Using a Different Radio
+
+To run Reticulum over a different radio, just change `devices` to that radio's Linux network interface:
+
+| Radio | Interface | Config |
+|-------|-----------|--------|
+| HaLow (default) | `br-ahwlan` | `devices = br-ahwlan` |
+| Standard WiFi | `wlan1` | `devices = wlan1` |
+| Ethernet | `eth0` | `devices = eth0` |
+
+After editing, restart Reticulum:
+
+```bash
+/etc/init.d/rnsd restart
+```
+
 ### Interface Types Explained
 
 | Interface | Purpose |
 |-----------|---------|
-| AutoInterface | Auto-discovers peers on the bridge interface via multicast |
+| AutoInterface | Auto-discovers peers on a network device via multicast — radio-agnostic |
 | UDPInterface | Broadcasts packets to all nodes on the mesh subnet |
 
 ## Running Reticulum
