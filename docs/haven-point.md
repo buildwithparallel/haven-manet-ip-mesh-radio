@@ -116,7 +116,7 @@ Reticulum network stack for encrypted mesh communication.
 - Config: `~/.reticulum/config`
 - Service: `/etc/init.d/rnsd`
 
-Configuration:
+Configuration (same on all nodes):
 ```ini
 [reticulum]
   share_instance = Yes
@@ -133,7 +133,7 @@ Configuration:
   [[UDP Broadcast]]
     type = UDPInterface
     enabled = Yes
-    listen_ip = <point-mesh-ip>
+    listen_ip = 0.0.0.0
     listen_port = 4242
     forward_ip = 10.41.255.255
     forward_port = 4242
@@ -183,7 +183,7 @@ ping $(uci get network.ahwlan.gateway)  # Ping gate
 iwinfo wlan0 info           # HaLow link quality
 
 # Check Reticulum
-rnstatus
+python3 /root/rns_status.py
 
 # Check routing
 ip route

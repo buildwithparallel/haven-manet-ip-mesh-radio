@@ -239,7 +239,7 @@ rm /root/.cot_peer
 
 ### Link Not Establishing
 
-1. Check Reticulum is running: `rnstatus`
+1. Check Reticulum is running: `python3 /root/rns_status.py`
 2. Verify the peer hash: `cat /root/.cot_peer`
 3. Check mesh connectivity: `ping <other_node_ip>`
 

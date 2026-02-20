@@ -54,7 +54,7 @@ pip3 install rns
 
 The Reticulum configuration file is located at `~/.reticulum/config`.
 
-### Gate Node (Green) Configuration
+### Configuration (same on all nodes)
 
 ```ini
 [reticulum]
@@ -72,37 +72,13 @@ The Reticulum configuration file is located at `~/.reticulum/config`.
   [[UDP Broadcast]]
     type = UDPInterface
     enabled = Yes
-    listen_ip = <gate-mesh-ip>
+    listen_ip = 0.0.0.0
     listen_port = 4242
     forward_ip = 10.41.255.255
     forward_port = 4242
 ```
 
-### Point Node (Blue) Configuration
-
-```ini
-[reticulum]
-  share_instance = Yes
-  enable_transport = Yes
-  instance_control_port = 37428
-
-[interfaces]
-  [[HaLow Mesh Bridge]]
-    type = AutoInterface
-    enabled = Yes
-    devices = br-ahwlan
-    group_id = reticulum
-
-  [[UDP Broadcast]]
-    type = UDPInterface
-    enabled = Yes
-    listen_ip = <point-mesh-ip>
-    listen_port = 4242
-    forward_ip = 10.41.255.255
-    forward_port = 4242
-```
-
-> **Note:** Replace `<gate-mesh-ip>` and `<point-mesh-ip>` with each node's actual mesh IP. OpenMANET dynamically assigns these — run `uci get network.ahwlan.ipaddr` on any node to find its current IP.
+> **Note:** The config is identical on green (gate) and blue (point) nodes. Using `listen_ip = 0.0.0.0` binds to all interfaces, so the config works regardless of which IP openmanetd assigns.
 
 ### Interface Types Explained
 
@@ -122,7 +98,7 @@ The Reticulum configuration file is located at `~/.reticulum/config`.
 /etc/init.d/rnsd enable
 
 # Check status
-rnstatus
+python3 /root/rns_status.py
 ```
 
 ### Manually
@@ -131,11 +107,6 @@ rnsd &
 ```
 
 ## Monitoring
-
-### Built-in Status
-```bash
-rnstatus
-```
 
 ### Live Dashboard (rns_status.py)
 
@@ -205,7 +176,7 @@ Reticulum has a 500-byte packet MTU to support low-bandwidth links like LoRa. Fo
 ### No Peers Visible
 ```bash
 # Check interface is up
-rnstatus
+python3 /root/rns_status.py
 
 # Verify bridge interface exists
 ip link show br-ahwlan

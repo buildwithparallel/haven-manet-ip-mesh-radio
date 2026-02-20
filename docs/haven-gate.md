@@ -168,7 +168,7 @@ Reticulum network stack runs as a transport daemon.
 
 - Config: `~/.reticulum/config`
 - Service: `/etc/init.d/rnsd`
-- Status: `rnstatus`
+- Status: `python3 /root/rns_status.py`
 
 See [../Reticulum/README.md](../Reticulum/README.md) for details.
 
@@ -205,7 +205,7 @@ iwinfo wlan0 info
 batctl n          # BATMAN neighbors
 
 # Check Reticulum
-rnstatus
+python3 /root/rns_status.py
 
 # Check bridge
 brctl show br-ahwlan

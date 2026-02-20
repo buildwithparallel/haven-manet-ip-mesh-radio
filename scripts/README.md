@@ -173,7 +173,6 @@ ping <gate-mesh-ip>   # Ping gateway (find with: uci get network.ahwlan.ipaddr o
 
 ### Verify Reticulum (if installed)
 ```bash
-rnstatus                          # Built-in status (basic)
 python3 /root/rns_status.py       # Live dashboard with HaLow + data exchange
 ```
 
@@ -202,8 +201,7 @@ See the [Haven Guide](https://buildwithparallel.com/products/haven) for video tu
 - Test: `ping <gate-mesh-ip>` then `ping 8.8.8.8`
 
 ### Reticulum Issues
-- Check status: `rnstatus`
-- Live dashboard: `python3 /root/rns_status.py`
+- Check status: `python3 /root/rns_status.py`
 - View logs: `rnsd -v`
 
 ---
