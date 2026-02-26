@@ -68,12 +68,16 @@ The primary backhaul radio operating in sub-1GHz spectrum for long-range mesh co
 
 #### Channel Widths
 
-| Width | Throughput | Range | Best For |
-|-------|------------|-------|----------|
-| 1 MHz | ~1.5 Mbps | Maximum | Long-range backhaul |
-| 2 MHz | ~4 Mbps | Very Long | Balanced range/speed |
-| 4 MHz | ~15 Mbps | Long | Higher throughput |
-| 8 MHz | ~32 Mbps | Medium | Local high-speed |
+Max PHY rate depends on the HaLow SoC. Haven ships with the **MM6108** (MCS 0–7, 64-QAM max). The **MM8108** adds MCS 8–9 (256-QAM) for higher peak rates and an integrated 26 dBm PA.
+
+| Width | MM6108 Max | MM8108 Max | Range | Best For |
+|-------|------------|------------|-------|----------|
+| 1 MHz | 3.3 Mbps | 4.4 Mbps | Maximum | Long-range backhaul |
+| 2 MHz | 7.2 Mbps | 8.7 Mbps | Very Long | Balanced range/speed |
+| 4 MHz | 15.0 Mbps | 20.0 Mbps | Long | Higher throughput |
+| 8 MHz | 32.5 Mbps | 43.3 Mbps | Medium | Local high-speed |
+
+> Real-world throughput is typically 40–60% of PHY rate.
 
 Configure frequency via OpenWrt:
 ```bash

@@ -120,12 +120,56 @@ sh /tmp/setup-cot-bridge.sh
 
 ### Channel Width vs Range
 
-| Setting | Width | Speed | Range |
-|---------|-------|-------|-------|
-| HT10 | 1 MHz | ~1.5 Mbps | Maximum |
-| HT20 | 2 MHz | ~4 Mbps | Very Long |
-| HT40 | 4 MHz | ~15 Mbps | Long |
-| HT80 | 8 MHz | ~32 Mbps | Medium |
+Max PHY rate depends on the HaLow SoC. Haven ships with the **MM6108** (MCS 0–7, up to 64-QAM). The **MM8108** is a drop-in upgrade adding MCS 8–9 (256-QAM) for higher peak rates and an integrated 26 dBm PA.
+
+| Setting | Width | MM6108 Max | MM8108 Max | Range |
+|---------|-------|------------|------------|-------|
+| HT10 | 1 MHz | 3.3 Mbps | 4.4 Mbps | Maximum |
+| HT20 | 2 MHz | 7.2 Mbps | 8.7 Mbps | Very Long |
+| HT40 | 4 MHz | 15.0 Mbps | 20.0 Mbps | Long |
+| HT80 | 8 MHz | 32.5 Mbps | 43.3 Mbps | Medium |
+
+> Real-world throughput is typically 40–60% of PHY rate depending on signal, interference, and distance.
+
+<details>
+<summary>Full 802.11ah MCS reference table</summary>
+
+All rates are single-stream PHY rates in Mbps.
+
+| MCS | Modulation | Coding | 1 MHz | 2 MHz | 4 MHz | 8 MHz |
+|-----|------------|--------|------:|------:|------:|------:|
+| 10 | BPSK | 1/2 x2 | 0.17 | — | — | — |
+| 0 | BPSK | 1/2 | 0.33 | 0.72 | 1.50 | 3.25 |
+| 1 | QPSK | 1/2 | 0.67 | 1.44 | 3.00 | 6.50 |
+| 2 | QPSK | 3/4 | 1.00 | 2.17 | 4.50 | 9.75 |
+| 3 | 16-QAM | 1/2 | 1.33 | 2.89 | 6.00 | 13.00 |
+| 4 | 16-QAM | 3/4 | 2.00 | 4.33 | 9.00 | 19.50 |
+| 5 | 64-QAM | 2/3 | 2.67 | 5.78 | 12.00 | 26.00 |
+| 6 | 64-QAM | 3/4 | 3.00 | 6.50 | 13.50 | 29.25 |
+| 7 | 64-QAM | 5/6 | 3.33 | 7.22 | 15.00 | 32.50 |
+| 8 | 256-QAM | 3/4 | 4.00 | 8.67 | 18.00 | 39.00 |
+| 9 | 256-QAM | 5/6 | 4.44 | — | 20.00 | 43.33 |
+
+MCS 0–7 and 10: supported by both MM6108 and MM8108.
+MCS 8–9 (256-QAM): **MM8108 only**.
+
+**Receiver sensitivity** (MM8108, 10% PER, 256-byte packets):
+
+| MCS | 1 MHz | 2 MHz | 4 MHz | 8 MHz |
+|-----|------:|------:|------:|------:|
+| 0 | -106 dBm | -103 dBm | -102 dBm | -98 dBm |
+| 7 | -89 dBm | -86 dBm | -83 dBm | -80 dBm |
+| 9 | -83 dBm | — | -78 dBm | -74 dBm |
+
+**Max TX power** (MM8108, at module antenna pin):
+
+| MCS | 1 MHz | 2 MHz | 4 MHz | 8 MHz |
+|-----|------:|------:|------:|------:|
+| 0 | 25.5 dBm | 25.0 dBm | 22.5 dBm | 22.5 dBm |
+| 7 | 19.0 dBm | 20.0 dBm | 19.5 dBm | 20.0 dBm |
+| 9 | 15.5 dBm | — | 17.0 dBm | 16.0 dBm |
+
+</details>
 
 ## Accessing the Web Interface (LuCI)
 

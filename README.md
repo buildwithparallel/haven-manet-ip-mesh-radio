@@ -161,12 +161,16 @@ HaLow operates in sub-1GHz ISM bands, providing significantly greater range than
 
 ### Channel Widths
 
-| Width | Throughput | Range | Use Case |
-|-------|------------|-------|----------|
-| 1 MHz | ~1.5 Mbps | Maximum | Long-range backhaul |
-| 2 MHz | ~4 Mbps | Very Long | Balanced |
-| 4 MHz | ~15 Mbps | Long | Higher throughput |
-| 8 MHz | ~32 Mbps | Medium | Local high-speed |
+Max PHY rate depends on the HaLow SoC. Haven ships with the **MM6108** (MCS 0–7, 64-QAM max). The **MM8108** adds MCS 8–9 (256-QAM) for higher peak rates and an integrated 26 dBm PA.
+
+| Width | MM6108 Max | MM8108 Max | Range | Use Case |
+|-------|------------|------------|-------|----------|
+| 1 MHz | 3.3 Mbps | 4.4 Mbps | Maximum | Long-range backhaul |
+| 2 MHz | 7.2 Mbps | 8.7 Mbps | Very Long | Balanced |
+| 4 MHz | 15.0 Mbps | 20.0 Mbps | Long | Higher throughput |
+| 8 MHz | 32.5 Mbps | 43.3 Mbps | Medium | Local high-speed |
+
+> Real-world throughput is typically 40–60% of PHY rate. See [scripts/README.md](scripts/README.md#channel-width-vs-range) for the full MCS reference table.
 
 ### Current Configuration
 - **Channel**: 28 (916 MHz center frequency)
