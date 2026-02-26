@@ -103,7 +103,11 @@ sh /tmp/setup-cot-bridge.sh
 | `MESH_IP` | 10.41.0.2 | Initial node IP (openmanetd may reassign) |
 | `GATEWAY_IP` | 10.41.0.1 | Initial gate node IP (openmanetd may reassign) |
 
-> **Note:** OpenMANET's address reservation system manages mesh IPs on all nodes after setup. The defaults above are initial values — the final IPs may differ. Run `uci get network.ahwlan.ipaddr` on any node to find its current mesh IP, or check the boot screen on a connected monitor.
+> **Note:** OpenMANET's address reservation system manages mesh IPs on all nodes after setup. The defaults above are initial values — the final IPs may differ. Run `uci get network.ahwlan.ipaddr` on any node to find its current mesh IP, or check the boot screen on a connected monitor. To discover the IPs of all mesh nodes from any node, run:
+> ```
+> strings /etc/openmanetd/openmanetd.db | grep -E 'green|blue'
+> ```
+> This prints each node's MAC address, hostname, and current mesh IP.
 
 ### HaLow Channel Selection
 
