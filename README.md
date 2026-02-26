@@ -16,15 +16,15 @@ Haven is a mesh networking platform that combines:
 
 ### Why Haven?
 
-| Feature | Benefit |
-|---------|---------|
-| **Decentralized** | No central server, no single point of failure |
-| **Long Range** | 1-10+ km node-to-node with HaLow radios |
-| **Self-Healing** | Automatic route discovery and failover |
-| **Internet Sharing** | One uplink serves the entire mesh |
-| **Fully Open Source** | No proprietary lock-in, audit everything |
-| **Multi-hop** | Traffic routes through intermediate nodes |
-| **Low Power** | Sub-1GHz radios are power efficient |
+| Feature               | Benefit                                       |
+| --------------------- | --------------------------------------------- |
+| **Decentralized**     | No central server, no single point of failure |
+| **Long Range**        | 1-10+ km node-to-node with HaLow radios       |
+| **Self-Healing**      | Automatic route discovery and failover        |
+| **Internet Sharing**  | One uplink serves the entire mesh             |
+| **Fully Open Source** | No proprietary lock-in, audit everything      |
+| **Multi-hop**         | Traffic routes through intermediate nodes     |
+| **Low Power**         | Sub-1GHz radios are power efficient           |
 
 ## Haven Nodes
 
@@ -44,12 +44,12 @@ Haven nodes are compact, rugged units built for field deployment. Each node incl
                                   │
                                   ▼
     ┌─────────────────────────────────────────────────────────┐
-    │              HAVEN GATE — green (Gateway)                │
+    │              HAVEN GATE — green (Gateway)               │
     │                                                         │
-    │   ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐   │
-    │   │  eth0   │  │  HaLow  │  │  5GHz   │  │  2.4GHz │   │
-    │   │ uplink  │  │  mesh   │  │   AP    │  │   AP    │   │
-    │   └─────────┘  └─────────┘  └─────────┘  └─────────┘   │
+    │   ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐    │
+    │   │  eth0   │  │  HaLow  │  │  5GHz   │  │  2.4GHz │    │
+    │   │ uplink  │  │  mesh   │  │   AP    │  │   AP    │    │
+    │   └─────────┘  └─────────┘  └─────────┘  └─────────┘    │
     │        │            │            │            │         │
     │        └────────────┴────────────┴────────────┘         │
     │                    br-ahwlan bridge                     │
@@ -61,7 +61,7 @@ Haven nodes are compact, rugged units built for field deployment. Each node incl
                                   │ (1-10+ km range)
                                   ▼
     ┌─────────────────────────────────────────────────────────┐
-    │              HAVEN POINT — blue (Extender)               │
+    │              HAVEN POINT — blue (Extender)              │
     │                                                         │
     │             ┌─────────┐          ┌─────────┐            │
     │             │  HaLow  │          │  5GHz   │            │
@@ -123,17 +123,17 @@ Use the IP at the end to access blue's web interface.
 
 **Gate Node (green)** — default password: `havengreen`
 
-| Method | Steps |
-|--------|-------|
-| Gate WiFi | Connect to **green-5ghz** (password: `green-5ghz`), run `uci get network.ahwlan.ipaddr` on the gate to find its mesh IP, browse to that IP |
-| Upstream network | Connect to your upstream router's WiFi, find the gate's IP in your router's device list, browse to that IP |
+| Method           | Steps                                                                                            |
+| ---------------- | ------------------------------------------------------------------------------------------------ |
+| Gate WiFi        | Connect to **green-5ghz** (password: `green-5ghz`), run `uci get network.ahwlan.ipaddr` on the gate to find its mesh IP, browse to that IP  |
+| Upstream network | Connect to your upstream router's WiFi, find the gate's IP in your router's device list, browse to that IP                                 |
 
 **Point Node (blue)** — default password: `havenblue`
 
-| Method | Steps |
-|--------|-------|
-| Point WiFi | Connect to **blue-5ghz** (password: `blue-5ghz`), browse to **http://\<point-mesh-ip\>** |
-| Gate WiFi (via mesh) | Connect to **green-5ghz**, browse to **http://\<point-mesh-ip\>** |
+| Method               | Steps                                                                                      |
+| -------------------- | ------------------------------------------------------------------------------------------ |
+| Point WiFi           | Connect to **blue-5ghz** (password: `blue-5ghz`), browse to **http://\\<point-mesh-ip\\>** |
+| Gate WiFi (via mesh) | Connect to **green-5ghz**, browse to **http://\\<point-mesh-ip\\>**                        |
 
 > **Tip:** If you can reach the point node's LuCI through the gate node's WiFi, your mesh is working.
 
@@ -152,21 +152,21 @@ HaLow operates in sub-1GHz ISM bands, providing significantly greater range than
 
 ### Supported Frequency Bands
 
-| Region | Frequency Range | Common Channels |
-|--------|-----------------|-----------------|
-| US/FCC | 902-928 MHz | 1-51 |
-| EU/ETSI | 863-868 MHz | Varies |
-| Japan | 920-928 MHz | Varies |
-| Australia | 915-928 MHz | Varies |
+| Region    | Frequency Range | Common Channels |
+| --------- | --------------- | --------------- |
+| US/FCC    | 902-928 MHz     | 1-51            |
+| EU/ETSI   | 863-868 MHz     | Varies          |
+| Japan     | 920-928 MHz     | Varies          |
+| Australia | 915-928 MHz     | Varies          |
 
 ### Channel Widths
 
-| Width | Throughput | Range | Use Case |
-|-------|------------|-------|----------|
-| 1 MHz | ~1.5 Mbps | Maximum | Long-range backhaul |
-| 2 MHz | ~4 Mbps | Very Long | Balanced |
-| 4 MHz | ~15 Mbps | Long | Higher throughput |
-| 8 MHz | ~32 Mbps | Medium | Local high-speed |
+| Width | Throughput | Range     | Use Case            |
+| ----- | ---------- | --------- | ------------------- |
+| 1 MHz | ~1.5 Mbps  | Maximum   | Long-range backhaul |
+| 2 MHz | ~4 Mbps    | Very Long | Balanced            |
+| 4 MHz | ~15 Mbps   | Long      | Higher throughput   |
+| 8 MHz | ~32 Mbps   | Medium    | Local high-speed    |
 
 ### Current Configuration
 - **Channel**: 28 (916 MHz center frequency)
@@ -178,15 +178,15 @@ HaLow operates in sub-1GHz ISM bands, providing significantly greater range than
 
 All components are open source:
 
-| Component | Version | Description |
-|-----------|---------|-------------|
-| **OpenMANET** | 24.10 (1.6.1) | OpenWrt-based mesh firmware |
-| **OpenWrt** | 24.10 | Base embedded Linux distribution |
-| **Linux Kernel** | 6.6.102 | Operating system kernel |
-| **Morse Micro Driver** | 1.16.4 | HaLow radio driver |
-| **BATMAN-adv** | 2025.4 | Layer 2 mesh routing protocol |
-| **Python** | 3.11.14 | Runtime for Reticulum |
-| **Reticulum** | 1.1.3 | Encrypted networking stack |
+| Component              | Version       | Description                      |
+| ---------------------- | ------------- | -------------------------------- |
+| **OpenMANET**          | 24.10 (1.6.1) | OpenWrt-based mesh firmware      |
+| **OpenWrt**            | 24.10         | Base embedded Linux distribution |
+| **Linux Kernel**       | 6.6.102       | Operating system kernel          |
+| **Morse Micro Driver** | 1.16.4        | HaLow radio driver               |
+| **BATMAN-adv**         | 2025.4        | Layer 2 mesh routing protocol    |
+| **Python**             | 3.11.14       | Runtime for Reticulum            |
+| **Reticulum**          | 1.1.3         | Encrypted networking stack       |
 
 ## Hardware Requirements
 
@@ -203,13 +203,13 @@ All components are open source:
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
-| [scripts/README.md](scripts/README.md) | **Automated setup scripts** |
-| [docs/haven-gate.md](docs/haven-gate.md) | Gate node (green) manual configuration |
+| Document                                   | Description                            |
+| ------------------------------------------ | -------------------------------------- |
+| [scripts/README.md](scripts/README.md)     | **Automated setup scripts**            |
+| [docs/haven-gate.md](docs/haven-gate.md)   | Gate node (green) manual configuration |
 | [docs/haven-point.md](docs/haven-point.md) | Point node (blue) manual configuration |
-| [Reticulum/README.md](Reticulum/README.md) | Encrypted communications layer |
-| [ATAK/README.md](ATAK/README.md) | ATAK/CivTAK integration |
+| [Reticulum/README.md](Reticulum/README.md) | Encrypted communications layer         |
+| [ATAK/README.md](ATAK/README.md)           | ATAK/CivTAK integration                |
 
 ## Use Cases
 
@@ -222,11 +222,11 @@ All components are open source:
 
 ## Security
 
-| Layer | Protection |
-|-------|------------|
+| Layer      | Protection                                  |
+| ---------- | ------------------------------------------- |
 | HaLow Mesh | WPA3 SAE (CCMP) - strongest WiFi encryption |
-| Reticulum | Curve25519 + AES-128 end-to-end encryption |
-| ATAK | Optional additional encryption |
+| Reticulum  | Curve25519 + AES-128 end-to-end encryption  |
+| ATAK       | Optional additional encryption              |
 
 ## Support & Community
 
