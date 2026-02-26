@@ -250,6 +250,12 @@ Contributions welcome:
 
 MIT License - See [LICENSE](LICENSE) file.
 
+## 3D Printable Enclosure
+
+The official Haven case is released into the **public domain** — free for anyone to print, modify, and distribute. Designed for Parallel by [MOROSX](https://morosx.com/).
+
+[Download on Printables](https://www.printables.com/model/1468595-haven-case-for-raspberry-pi-based-manet-by-paralle)
+
 ## Acknowledgments
 
 - [OpenMANET](https://openmanet.org/) - Mesh networking firmware
@@ -257,4 +263,5 @@ MIT License - See [LICENSE](LICENSE) file.
 - [ATAK](https://tak.gov/) by TAK Product Center
 - [Morse Micro](https://www.morsemicro.com/) - HaLow radio technology
 - [OpenWrt](https://openwrt.org/) Project
+- [MOROSX](https://morosx.com/) - Haven enclosure design
 - [BATMAN-adv](https://www.open-mesh.org/) mesh protocol
