@@ -1,8 +1,14 @@
 # Haven Setup Scripts
 
-Automated setup scripts for configuring Haven mesh nodes from a fresh OpenMANET install.
+Automated setup scripts for configuring Haven mesh nodes.
 
 **Full Haven Guide**: [buildwithparallel.com/products/haven](https://buildwithparallel.com/products/haven) - includes videos, schematics, 3D printable enclosures, Discord community, and direct support.
+
+> **Prerequisite:** All scripts assume each node is flashed with a fresh/recent version of [OpenMANET](https://openmanet.org/).
+>
+> **Fresh install:** Flash OpenMANET onto each node's microSD card using Raspberry Pi Imager, then insert the card and power on.
+>
+> **Upgrading an existing install:** Open LuCI → System → Backup / Flash Firmware → upload the OpenMANET image. **Uncheck "Keep settings"** for a clean slate.
 
 ## Scripts Overview
 
@@ -16,15 +22,7 @@ Automated setup scripts for configuring Haven mesh nodes from a fresh OpenMANET 
 | `rns_send.py` | Send a message over Reticulum | Sender node |
 | `rns_receive.py` | Receive messages over Reticulum | Receiver node |
 
-## Quick Start
-
-### Step 1: Install OpenMANET
-
-**Fresh install:** Flash OpenMANET onto each node's microSD card using Raspberry Pi Imager, then insert the card and power on.
-
-**Upgrading an existing install:** Open LuCI → System → Backup / Flash Firmware → upload the OpenMANET image. **Uncheck "Keep settings"** for a clean slate.
-
-### Step 2: Set Up the Gate Node (green)
+## Step 1: Set Up the Gate Node (green)
 
 This is the node that shares internet with the rest of the mesh.
 
@@ -40,9 +38,9 @@ sh setup.sh && reboot
 ```
 5. Wait ~60 seconds for reboot
 
-### Step 3: Set Up the Point Node (blue)
+## Step 2: Add Point Nodes (blue)
 
-This node extends the mesh — no internet connection needed.
+Point nodes extend the mesh — no internet connection needed.
 
 1. Plug Ethernet **directly from your computer to the point node**
 2. Open a browser and go to `http://10.41.254.1`
@@ -54,163 +52,19 @@ This node extends the mesh — no internet connection needed.
 5. After the script finishes, type `reboot` and press Enter
 6. Wait ~60 seconds for reboot
 
-### Step 4: Verify the Mesh
+### Adding More Nodes
+
+For each additional point node:
+1. Edit `setup-haven-point.sh` with unique `HOSTNAME` and `MESH_IP`
+2. Keep `MESH_ID`, `MESH_KEY`, `HALOW_CHANNEL` the same as gate
+3. Run script and reboot
+
+### Verify the Mesh
 
 1. Connect to **green-5ghz** WiFi (password: `green-5ghz`)
 2. Find the point node's mesh IP (run `uci get network.ahwlan.ipaddr` on the point node, or check its boot screen)
 3. Browse to **http://\<point-mesh-ip\>** — if blue's LuCI loads, your mesh is working
 
-### Step 5: Customize
-
-Use LuCI's web interface to change passwords, WiFi SSIDs, and other settings on each node. See [Accessing the Web Interface](#accessing-the-web-interface-luci) below.
-
-### 3. (Optional) Add Reticulum Encryption
-
-```bash
-wget -O /tmp/setup-reticulum.sh https://raw.githubusercontent.com/buildwithparallel/haven-manet-ip-mesh-radio/main/scripts/setup-reticulum.sh
-sh /tmp/setup-reticulum.sh
-/etc/init.d/rnsd enable && /etc/init.d/rnsd start
-```
-
-### 4. (Optional) Add ATAK Bridge
-
-```bash
-wget -O /tmp/setup-cot-bridge.sh https://raw.githubusercontent.com/buildwithparallel/haven-manet-ip-mesh-radio/main/scripts/setup-cot-bridge.sh
-sh /tmp/setup-cot-bridge.sh
-/etc/init.d/cot_bridge enable && /etc/init.d/cot_bridge start
-```
-
-## Configuration Reference
-
-### Gate Node Defaults (green)
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `HOSTNAME` | green | Node hostname |
-| `ROOT_PASSWORD` | havengreen | SSH/LuCI password |
-| `MESH_ID` | haven | Mesh network name |
-| `MESH_KEY` | havenmesh | Mesh encryption key |
-| `MESH_IP` | 10.41.0.1 | Initial node IP (openmanetd may reassign) |
-| `HALOW_CHANNEL` | 28 | HaLow channel (916 MHz) |
-| `HALOW_HTMODE` | HT20 | Channel width (2 MHz) |
-
-### Point Node Defaults (blue)
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `HOSTNAME` | blue | Node hostname |
-| `ROOT_PASSWORD` | havenblue | SSH/LuCI password |
-| `MESH_IP` | 10.41.0.2 | Initial node IP (openmanetd may reassign) |
-| `GATEWAY_IP` | 10.41.0.1 | Initial gate node IP (openmanetd may reassign) |
-
-> **Note:** OpenMANET's address reservation system manages mesh IPs on all nodes after setup. The defaults above are initial values — the final IPs may differ. Run `uci get network.ahwlan.ipaddr` on any node to find its current mesh IP, or check the boot screen on a connected monitor. To discover the IPs of all mesh nodes from any node, run:
-> ```
-> strings /etc/openmanetd/openmanetd.db | grep -E 'green|blue'
-> ```
-> This prints each node's MAC address, hostname, and current mesh IP.
-
-### HaLow Channel Selection
-
-| Region | Frequency Range | Example |
-|--------|-----------------|---------|
-| US/FCC | 902-928 MHz | Channel 28 = 916 MHz |
-| EU/ETSI | 863-868 MHz | Region-specific |
-| Japan | 920-928 MHz | Region-specific |
-| Australia | 915-928 MHz | Region-specific |
-
-### Channel Width vs Range
-
-Max PHY rate depends on the HaLow SoC. Haven ships with the **MM6108** (MCS 0–7, up to 64-QAM). The **MM8108** is a drop-in upgrade adding MCS 8–9 (256-QAM) for higher peak rates and an integrated 26 dBm PA.
-
-| Setting | Width | MM6108 Max | MM8108 Max | Range |
-|---------|-------|------------|------------|-------|
-| HT10 | 1 MHz | 3.3 Mbps | 4.4 Mbps | Maximum |
-| HT20 | 2 MHz | 7.2 Mbps | 8.7 Mbps | Very Long |
-| HT40 | 4 MHz | 15.0 Mbps | 20.0 Mbps | Long |
-| HT80 | 8 MHz | 32.5 Mbps | 43.3 Mbps | Medium |
-
-> Real-world throughput is typically 40–60% of PHY rate depending on signal, interference, and distance.
-
-<details>
-<summary>Full 802.11ah MCS reference table</summary>
-
-All rates are single-stream PHY rates in Mbps.
-
-| MCS | Modulation | Coding | 1 MHz | 2 MHz | 4 MHz | 8 MHz |
-|-----|------------|--------|------:|------:|------:|------:|
-| 10 | BPSK | 1/2 x2 | 0.17 | — | — | — |
-| 0 | BPSK | 1/2 | 0.33 | 0.72 | 1.50 | 3.25 |
-| 1 | QPSK | 1/2 | 0.67 | 1.44 | 3.00 | 6.50 |
-| 2 | QPSK | 3/4 | 1.00 | 2.17 | 4.50 | 9.75 |
-| 3 | 16-QAM | 1/2 | 1.33 | 2.89 | 6.00 | 13.00 |
-| 4 | 16-QAM | 3/4 | 2.00 | 4.33 | 9.00 | 19.50 |
-| 5 | 64-QAM | 2/3 | 2.67 | 5.78 | 12.00 | 26.00 |
-| 6 | 64-QAM | 3/4 | 3.00 | 6.50 | 13.50 | 29.25 |
-| 7 | 64-QAM | 5/6 | 3.33 | 7.22 | 15.00 | 32.50 |
-| 8 | 256-QAM | 3/4 | 4.00 | 8.67 | 18.00 | 39.00 |
-| 9 | 256-QAM | 5/6 | 4.44 | — | 20.00 | 43.33 |
-
-MCS 0–7 and 10: supported by both MM6108 and MM8108.
-MCS 8–9 (256-QAM): **MM8108 only**.
-
-**Receiver sensitivity** (MM8108, 10% PER, 256-byte packets):
-
-| MCS | 1 MHz | 2 MHz | 4 MHz | 8 MHz |
-|-----|------:|------:|------:|------:|
-| 0 | -106 dBm | -103 dBm | -102 dBm | -98 dBm |
-| 7 | -89 dBm | -86 dBm | -83 dBm | -80 dBm |
-| 9 | -83 dBm | — | -78 dBm | -74 dBm |
-
-**Max TX power** (MM8108, at module antenna pin):
-
-| MCS | 1 MHz | 2 MHz | 4 MHz | 8 MHz |
-|-----|------:|------:|------:|------:|
-| 0 | 25.5 dBm | 25.0 dBm | 22.5 dBm | 22.5 dBm |
-| 7 | 19.0 dBm | 20.0 dBm | 19.5 dBm | 20.0 dBm |
-| 9 | 15.5 dBm | — | 17.0 dBm | 16.0 dBm |
-
-</details>
-
-## Accessing the Web Interface (LuCI)
-
-After setup and reboot, you can manage each node through its web interface.
-
-> **Finding mesh IPs:** OpenMANET dynamically assigns mesh IPs on all nodes. Run `uci get network.ahwlan.ipaddr` on any node to find its current IP, or check the boot screen on a connected monitor.
-
-#### Finding Blue (Point) Node IPs from Green (Gate)
-
-SSH into green (gate) and run:
-
-```bash
-strings /etc/openmanetd/openmanetd.db | grep blue
-```
-
-This returns blue's MAC address, hostname, and current mesh IP:
-```
-2c:c6:82:8a:2a:f6 blue 10.41.126.198
-```
-
-Use the IP at the end to access blue's web interface.
-
-**Gate Node (green)** — default password: `havengreen`
-
-| Method | Steps |
-|--------|-------|
-| Gate WiFi | Connect to **green-5ghz** (password: `green-5ghz`), browse to **http://\<gate-mesh-ip\>** |
-| Upstream network | Connect to your upstream router's WiFi, find the gate's IP in your router's device list, browse to that IP |
-
-**Point Node (blue)** — default password: `havenblue`
-
-| Method | Steps |
-|--------|-------|
-| Point WiFi | Connect to **blue-5ghz** (password: `blue-5ghz`), browse to **http://\<point-mesh-ip\>** |
-| Gate WiFi (via mesh) | Connect to **green-5ghz**, browse to **http://\<point-mesh-ip\>** |
-
-> **Tip:** If you can reach the point node's LuCI through the gate node's WiFi, your mesh is working.
-
-## After Setup
-
-### Verify Mesh Connectivity
 ```bash
 iwinfo wlan0 info     # HaLow link quality
 batctl n              # BATMAN-adv neighbors
@@ -219,44 +73,23 @@ ping <gate-mesh-ip>   # Ping gateway (find with: uci get network.ahwlan.ipaddr o
 
 <img src="../assets/mesh-verify.png" alt="Mesh verification from point node" width="500">
 
-### Verify Reticulum (if installed)
+> After setup, use LuCI's web interface to change passwords, WiFi SSIDs, and other settings on each node. See [Accessing the Web Interface](#accessing-the-web-interface-luci) below.
+
+## Step 3: Install Reticulum (Optional)
+
+Adds an encrypted communications overlay to the mesh. Run on **each node** that needs Reticulum:
+
 ```bash
-python3 /root/rns_status.py       # Live dashboard with HaLow + data exchange
+wget -O /tmp/setup-reticulum.sh https://raw.githubusercontent.com/buildwithparallel/haven-manet-ip-mesh-radio/main/scripts/setup-reticulum.sh
+sh /tmp/setup-reticulum.sh
+/etc/init.d/rnsd enable && /etc/init.d/rnsd start
 ```
 
-### Verify ATAK Bridge (if installed)
-```bash
-tail -f /tmp/bridge.log
-```
+See [Reticulum/README.md](../Reticulum/README.md) for configuration details, interface types, and how HaLow traffic reaches Reticulum.
 
-## Adding More Nodes
+## Step 4: Send Reticulum Messages (Optional)
 
-For each additional point node:
-1. Edit `setup-haven-point.sh` with unique `HOSTNAME` and `MESH_IP`
-2. Keep `MESH_ID`, `MESH_KEY`, `HALOW_CHANNEL` the same as gate
-3. Run script and reboot
-
-## Troubleshooting
-
-See the [Haven Guide](https://buildwithparallel.com/products/haven) for video tutorials and Discord support.
-
-### Nodes Can't Connect
-- Verify `MESH_ID`, `MESH_KEY`, `HALOW_CHANNEL` match exactly on all nodes
-- Check HaLow radio: `iwinfo wlan0 info`
-
-### No Internet on Point Nodes
-- Verify gateway route: `ip route | grep default`
-- Test: `ping <gate-mesh-ip>` then `ping 8.8.8.8`
-
-### Reticulum Issues
-- Check status: `python3 /root/rns_status.py`
-- View logs: `rnsd -v`
-
----
-
-## Reticulum Demo Tools
-
-Three scripts for demonstrating and monitoring Reticulum data transfer over the Haven mesh.
+Three scripts for demonstrating and monitoring Reticulum data transfer over the Haven mesh. Requires [Step 3](#step-3-install-reticulum-optional).
 
 ### rns_status.py — Live Network Dashboard
 
@@ -401,3 +234,166 @@ Connecting...
 Sending: Hello from GREEN over Reticulum and HaLow
 Sent!
 ```
+
+## Step 5: Install the ATAK Bridge (Optional)
+
+Bridges ATAK/CivTAK situational awareness traffic over Reticulum. Requires [Step 3](#step-3-install-reticulum-optional).
+
+```bash
+wget -O /tmp/setup-cot-bridge.sh https://raw.githubusercontent.com/buildwithparallel/haven-manet-ip-mesh-radio/main/scripts/setup-cot-bridge.sh
+sh /tmp/setup-cot-bridge.sh
+/etc/init.d/cot_bridge enable && /etc/init.d/cot_bridge start
+```
+
+See [ATAK/README.md](../ATAK/README.md) for peering, live dashboards, and troubleshooting.
+
+### Verify ATAK Bridge
+```bash
+tail -f /tmp/bridge.log
+```
+
+---
+
+## Configuration Reference
+
+### Gate Node Defaults (green)
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `HOSTNAME` | green | Node hostname |
+| `ROOT_PASSWORD` | havengreen | SSH/LuCI password |
+| `MESH_ID` | haven | Mesh network name |
+| `MESH_KEY` | havenmesh | Mesh encryption key |
+| `MESH_IP` | 10.41.0.1 | Initial node IP (openmanetd may reassign) |
+| `HALOW_CHANNEL` | 28 | HaLow channel (916 MHz) |
+| `HALOW_HTMODE` | HT20 | Channel width (2 MHz) |
+
+### Point Node Defaults (blue)
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `HOSTNAME` | blue | Node hostname |
+| `ROOT_PASSWORD` | havenblue | SSH/LuCI password |
+| `MESH_IP` | 10.41.0.2 | Initial node IP (openmanetd may reassign) |
+| `GATEWAY_IP` | 10.41.0.1 | Initial gate node IP (openmanetd may reassign) |
+
+> **Note:** OpenMANET's address reservation system manages mesh IPs on all nodes after setup. The defaults above are initial values — the final IPs may differ. Run `uci get network.ahwlan.ipaddr` on any node to find its current mesh IP, or check the boot screen on a connected monitor. To discover the IPs of all mesh nodes from any node, run:
+> ```
+> strings /etc/openmanetd/openmanetd.db | grep -E 'green|blue'
+> ```
+> This prints each node's MAC address, hostname, and current mesh IP.
+
+### HaLow Channel Selection
+
+| Region | Frequency Range | Example |
+|--------|-----------------|---------|
+| US/FCC | 902-928 MHz | Channel 28 = 916 MHz |
+| EU/ETSI | 863-868 MHz | Region-specific |
+| Japan | 920-928 MHz | Region-specific |
+| Australia | 915-928 MHz | Region-specific |
+
+### Channel Width vs Range
+
+Max PHY rate depends on the HaLow SoC. Haven ships with the **MM6108** (MCS 0–7, up to 64-QAM). The **MM8108** is a drop-in upgrade adding MCS 8–9 (256-QAM) for higher peak rates and an integrated 26 dBm PA.
+
+| Setting | Width | MM6108 Max | MM8108 Max | Range |
+|---------|-------|------------|------------|-------|
+| HT10 | 1 MHz | 3.3 Mbps | 4.4 Mbps | Maximum |
+| HT20 | 2 MHz | 7.2 Mbps | 8.7 Mbps | Very Long |
+| HT40 | 4 MHz | 15.0 Mbps | 20.0 Mbps | Long |
+| HT80 | 8 MHz | 32.5 Mbps | 43.3 Mbps | Medium |
+
+> Real-world throughput is typically 40–60% of PHY rate depending on signal, interference, and distance.
+
+<details>
+<summary>Full 802.11ah MCS reference table</summary>
+
+All rates are single-stream PHY rates in Mbps.
+
+| MCS | Modulation | Coding | 1 MHz | 2 MHz | 4 MHz | 8 MHz |
+|-----|------------|--------|------:|------:|------:|------:|
+| 10 | BPSK | 1/2 x2 | 0.17 | — | — | — |
+| 0 | BPSK | 1/2 | 0.33 | 0.72 | 1.50 | 3.25 |
+| 1 | QPSK | 1/2 | 0.67 | 1.44 | 3.00 | 6.50 |
+| 2 | QPSK | 3/4 | 1.00 | 2.17 | 4.50 | 9.75 |
+| 3 | 16-QAM | 1/2 | 1.33 | 2.89 | 6.00 | 13.00 |
+| 4 | 16-QAM | 3/4 | 2.00 | 4.33 | 9.00 | 19.50 |
+| 5 | 64-QAM | 2/3 | 2.67 | 5.78 | 12.00 | 26.00 |
+| 6 | 64-QAM | 3/4 | 3.00 | 6.50 | 13.50 | 29.25 |
+| 7 | 64-QAM | 5/6 | 3.33 | 7.22 | 15.00 | 32.50 |
+| 8 | 256-QAM | 3/4 | 4.00 | 8.67 | 18.00 | 39.00 |
+| 9 | 256-QAM | 5/6 | 4.44 | — | 20.00 | 43.33 |
+
+MCS 0–7 and 10: supported by both MM6108 and MM8108.
+MCS 8–9 (256-QAM): **MM8108 only**.
+
+**Receiver sensitivity** (MM8108, 10% PER, 256-byte packets):
+
+| MCS | 1 MHz | 2 MHz | 4 MHz | 8 MHz |
+|-----|------:|------:|------:|------:|
+| 0 | -106 dBm | -103 dBm | -102 dBm | -98 dBm |
+| 7 | -89 dBm | -86 dBm | -83 dBm | -80 dBm |
+| 9 | -83 dBm | — | -78 dBm | -74 dBm |
+
+**Max TX power** (MM8108, at module antenna pin):
+
+| MCS | 1 MHz | 2 MHz | 4 MHz | 8 MHz |
+|-----|------:|------:|------:|------:|
+| 0 | 25.5 dBm | 25.0 dBm | 22.5 dBm | 22.5 dBm |
+| 7 | 19.0 dBm | 20.0 dBm | 19.5 dBm | 20.0 dBm |
+| 9 | 15.5 dBm | — | 17.0 dBm | 16.0 dBm |
+
+</details>
+
+## Accessing the Web Interface (LuCI)
+
+After setup and reboot, you can manage each node through its web interface.
+
+> **Finding mesh IPs:** OpenMANET dynamically assigns mesh IPs on all nodes. Run `uci get network.ahwlan.ipaddr` on any node to find its current IP, or check the boot screen on a connected monitor.
+
+#### Finding Blue (Point) Node IPs from Green (Gate)
+
+SSH into green (gate) and run:
+
+```bash
+strings /etc/openmanetd/openmanetd.db | grep blue
+```
+
+This returns blue's MAC address, hostname, and current mesh IP:
+```
+2c:c6:82:8a:2a:f6 blue 10.41.126.198
+```
+
+Use the IP at the end to access blue's web interface.
+
+**Gate Node (green)** — default password: `havengreen`
+
+| Method | Steps |
+|--------|-------|
+| Gate WiFi | Connect to **green-5ghz** (password: `green-5ghz`), browse to **http://\<gate-mesh-ip\>** |
+| Upstream network | Connect to your upstream router's WiFi, find the gate's IP in your router's device list, browse to that IP |
+
+**Point Node (blue)** — default password: `havenblue`
+
+| Method | Steps |
+|--------|-------|
+| Point WiFi | Connect to **blue-5ghz** (password: `blue-5ghz`), browse to **http://\<point-mesh-ip\>** |
+| Gate WiFi (via mesh) | Connect to **green-5ghz**, browse to **http://\<point-mesh-ip\>** |
+
+> **Tip:** If you can reach the point node's LuCI through the gate node's WiFi, your mesh is working.
+
+## Troubleshooting
+
+See the [Haven Guide](https://buildwithparallel.com/products/haven) for video tutorials and Discord support.
+
+### Nodes Can't Connect
+- Verify `MESH_ID`, `MESH_KEY`, `HALOW_CHANNEL` match exactly on all nodes
+- Check HaLow radio: `iwinfo wlan0 info`
+
+### No Internet on Point Nodes
+- Verify gateway route: `ip route | grep default`
+- Test: `ping <gate-mesh-ip>` then `ping 8.8.8.8`
+
+### Reticulum Issues
+- Check status: `python3 /root/rns_status.py`
+- View logs: `rnsd -v`

@@ -78,73 +78,106 @@ Haven nodes are compact, rugged units built for field deployment. Each node incl
                           Phones, Laptops, ATAK
 ```
 
-## Quick Start
+## Getting Started
 
-### Automated Setup (Recommended)
+All Haven setup scripts assume each node is flashed with a fresh/recent version of [OpenMANET](https://openmanet.org/). Flash the image onto a microSD card using Raspberry Pi Imager, insert it into the node, and power on.
 
-Run these scripts on fresh OpenMANET installs to configure everything automatically:
+Full step-by-step instructions are in [scripts/README.md](scripts/README.md). Quick summary below.
 
-**Gate Node — green (first node, has internet):**
+| Step | What | Details |
+|------|------|---------|
+| **1** | [Set up the Gate node](#step-1-set-up-the-gate-node) | Your first node — shares internet with the mesh |
+| **2** | [Add Point nodes](#step-2-add-point-nodes) | Extend the mesh — no internet needed |
+| **3** | [Install Reticulum](#step-3-install-reticulum-optional) *(optional)* | Encrypted overlay communications |
+| **4** | [Send Reticulum messages](#step-4-send-reticulum-messages-optional) *(optional)* | Test encrypted messaging across the mesh |
+| **5** | [Install the ATAK bridge](#step-5-install-the-atak-bridge-optional) *(optional)* | ATAK/CivTAK situational awareness |
+
+### Step 1: Set Up the Gate Node
+
+The gate (green) is your first node — it shares internet with the rest of the mesh.
+
+1. Plug the gate node into your **upstream router via Ethernet**
+2. Find the gate's IP in your **router's device list**
+3. SSH in (`ssh root@<gate-ip>`) or open `http://<gate-ip>` → **Services → Terminal**
+4. Run:
 ```bash
 wget -O setup.sh https://raw.githubusercontent.com/buildwithparallel/haven-manet-ip-mesh-radio/main/scripts/setup-haven-gate.sh
 sh setup.sh && reboot
 ```
 
-**Point Node — blue (mesh extender)** — the point node has no internet, so paste the script instead:
-1. Open the [raw setup script](https://raw.githubusercontent.com/buildwithparallel/haven-manet-ip-mesh-radio/main/scripts/setup-haven-point.sh) on your computer
-2. Select all and copy
-3. Paste into the point node's terminal (via LuCI **Services → Terminal** at `http://10.41.254.1`)
-4. After the script finishes, type `reboot`
+### Step 2: Add Point Nodes
 
-> After setup, use LuCI's web interface to customize passwords, WiFi SSIDs, and other settings. See [Accessing the Web Interface](#accessing-the-web-interface-luci) below.
+Point nodes (blue) extend the mesh — no internet connection needed.
 
-See [scripts/README.md](scripts/README.md) for detailed options.
+1. Plug Ethernet **directly from your computer to the point node**
+2. Open a browser to `http://10.41.254.1` → **Services → Terminal**
+3. The point node has no internet, so paste the script directly:
+   - Open the [raw setup script](https://raw.githubusercontent.com/buildwithparallel/haven-manet-ip-mesh-radio/main/scripts/setup-haven-point.sh) on your computer
+   - Select all, copy, paste into the terminal, press Enter
+4. Type `reboot` when finished
 
-### Accessing the Web Interface (LuCI)
+**Verify:** Connect to **green-5ghz** WiFi (password: `green-5ghz`) and browse to the point node's mesh IP. If LuCI loads, your mesh is working.
 
-After setup and reboot, manage each node through its web interface. Login as `root` with the default password.
+### Step 3: Install Reticulum (Optional)
 
-> **Note:** OpenMANET dynamically assigns mesh IPs on all nodes. To find any node's current mesh IP, run `uci get network.ahwlan.ipaddr` on that node, or check the boot screen on a connected monitor.
-
-#### Finding Blue (Point) Node IPs from Green (Gate)
-
-The green (gate) node tracks all mesh nodes in its local database. To find blue's IP, SSH into green and run:
+Adds an encrypted overlay network to the mesh. Run on each node:
 
 ```bash
-strings /etc/openmanetd/openmanetd.db | grep blue
+wget -O /tmp/setup-reticulum.sh https://raw.githubusercontent.com/buildwithparallel/haven-manet-ip-mesh-radio/main/scripts/setup-reticulum.sh
+sh /tmp/setup-reticulum.sh
+/etc/init.d/rnsd enable && /etc/init.d/rnsd start
 ```
 
-This returns blue's MAC address, hostname, and current mesh IP:
+See [Reticulum/README.md](Reticulum/README.md) for configuration and interface details.
+
+### Step 4: Send Reticulum Messages (Optional)
+
+Test encrypted messaging across the mesh using the included demo scripts (`rns_status.py`, `rns_send.py`, `rns_receive.py`). See [scripts/README.md → Step 4](scripts/README.md#step-4-send-reticulum-messages-optional) for full usage and example output.
+
+### Step 5: Install the ATAK Bridge (Optional)
+
+Bridges ATAK/CivTAK situational awareness traffic over Reticulum. Requires [Step 3](#step-3-install-reticulum-optional).
+
+```bash
+wget -O /tmp/setup-cot-bridge.sh https://raw.githubusercontent.com/buildwithparallel/haven-manet-ip-mesh-radio/main/scripts/setup-cot-bridge.sh
+sh /tmp/setup-cot-bridge.sh
+/etc/init.d/cot_bridge enable && /etc/init.d/cot_bridge start
+```
+
+See [ATAK/README.md](ATAK/README.md) for peering, dashboards, and troubleshooting.
+
+> After any step, use LuCI's web interface to change passwords, WiFi SSIDs, and other settings. See [Finding Node IPs](#finding-node-ips) to access each node.
+
+### Finding Node IPs
+
+OpenMANET dynamically assigns mesh IPs. To find any node's IP:
+
+- **On the node itself:** `uci get network.ahwlan.ipaddr`
+- **From any node on the mesh:** `strings /etc/openmanetd/openmanetd.db | grep -E 'green|blue'`
+- **Visually:** Check the boot screen on a connected monitor
+
+Example `strings` output:
 ```
 2c:c6:82:8a:2a:f6 blue 10.41.126.198
 ```
 
-Use the IP at the end to access blue's web interface.
+**Default credentials** (user: `root`):
 
-**Gate Node (green)** — default password: `havengreen`
-
-| Method | Steps |
-|--------|-------|
-| Gate WiFi | Connect to **green-5ghz** (password: `green-5ghz`), run `uci get network.ahwlan.ipaddr` on the gate to find its mesh IP, browse to that IP |
-| Upstream network | Connect to your upstream router's WiFi, find the gate's IP in your router's device list, browse to that IP |
-
-**Point Node (blue)** — default password: `havenblue`
-
-| Method | Steps |
-|--------|-------|
-| Point WiFi | Connect to **blue-5ghz** (password: `blue-5ghz`), browse to **http://\<point-mesh-ip\>** |
-| Gate WiFi (via mesh) | Connect to **green-5ghz**, browse to **http://\<point-mesh-ip\>** |
-
-> **Tip:** If you can reach the point node's LuCI through the gate node's WiFi, your mesh is working.
+| Node | Password | WiFi SSID | WiFi Password |
+|------|----------|-----------|---------------|
+| Gate (green) | `havengreen` | `green-5ghz` | `green-5ghz` |
+| Point (blue) | `havenblue` | `blue-5ghz` | `blue-5ghz` |
 
 ### Manual Setup
 
-For manual configuration or custom setups:
+For manual configuration without the setup scripts:
 
-1. **Gate Node (green)**: [docs/haven-gate.md](docs/haven-gate.md)
-2. **Point Node (blue)**: [docs/haven-point.md](docs/haven-point.md)
-3. **Reticulum** (optional): [Reticulum/README.md](Reticulum/README.md)
-4. **ATAK Integration** (optional): [ATAK/README.md](ATAK/README.md)
+| Document | Description |
+|----------|-------------|
+| [docs/haven-gate.md](docs/haven-gate.md) | Gate node manual configuration |
+| [docs/haven-point.md](docs/haven-point.md) | Point node manual configuration |
+| [Reticulum/README.md](Reticulum/README.md) | Reticulum configuration and usage |
+| [ATAK/README.md](ATAK/README.md) | ATAK/CivTAK bridge setup |
 
 ## HaLow (802.11ah) Radio Specifications
 
@@ -172,10 +205,9 @@ Max PHY rate depends on the HaLow SoC. Haven ships with the **MM6108** (MCS 0–
 
 > Real-world throughput is typically 40–60% of PHY rate. See [scripts/README.md](scripts/README.md#channel-width-vs-range) for the full MCS reference table.
 
-### Current Configuration
+### Default Configuration
 - **Channel**: 28 (916 MHz center frequency)
 - **Width**: 2 MHz (HT20)
-- **Throughput**: ~32.5 Mbps
 - **Encryption**: WPA3 SAE (CCMP)
 
 ## Software Stack
@@ -204,16 +236,6 @@ All components are open source:
 - ARM or x86 device with SPI interface
 - HaLow radio module (Morse Micro recommended)
 - Standard WiFi for client access
-
-## Documentation
-
-| Document | Description |
-|----------|-------------|
-| [scripts/README.md](scripts/README.md) | **Automated setup scripts** |
-| [docs/haven-gate.md](docs/haven-gate.md) | Gate node (green) manual configuration |
-| [docs/haven-point.md](docs/haven-point.md) | Point node (blue) manual configuration |
-| [Reticulum/README.md](Reticulum/README.md) | Encrypted communications layer |
-| [ATAK/README.md](ATAK/README.md) | ATAK/CivTAK integration |
 
 ## Use Cases
 
