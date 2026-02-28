@@ -112,6 +112,11 @@ uci set network.ahwlan.ipaddr="$MESH_IP"
 uci set network.ahwlan.netmask="$MESH_NETMASK"
 uci set network.ahwlan.type='bridge'
 uci set network.ahwlan.delegate='0'
+# Gate must NEVER have a gateway on ahwlan — it IS the mesh gateway.
+# A gateway here would create a default route into the mesh instead of
+# out via eth0 to the upstream router, breaking internet for all clients.
+uci delete network.ahwlan.gateway 2>/dev/null || true
+uci delete network.ahwlan.dns 2>/dev/null || true
 
 uci set network.bat0=interface
 uci set network.bat0.proto='batadv'
