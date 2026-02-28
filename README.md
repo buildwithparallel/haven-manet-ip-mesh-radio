@@ -118,6 +118,8 @@ Point nodes (blue) extend the mesh — no internet connection needed.
 
 **Verify:** Connect to **green-5ghz** WiFi (password: `green-5ghz`) and browse to the point node's mesh IP. If LuCI loads, your mesh is working.
 
+**Connect your device:** After setup, join `green-5ghz` or `blue-5ghz` WiFi from your computer or phone. Your device should get a `10.41.x.x` IP address and can reach any node's web interface at `http://<node-mesh-ip>`. If the gate is plugged into your home router, you can also stay on your home WiFi and access the gate at the IP shown in your router's device list. See [scripts/README.md → Connect Your Device](scripts/README.md#connect-your-device) for details and troubleshooting.
+
 ### Step 3: Install Reticulum (Optional)
 
 Adds an encrypted overlay network to the mesh. Run on each node:

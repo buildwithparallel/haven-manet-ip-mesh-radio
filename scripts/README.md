@@ -75,6 +75,24 @@ ping <gate-mesh-ip>   # Ping gateway (find with: uci get network.ahwlan.ipaddr o
 
 > After setup, use LuCI's web interface to change passwords, WiFi SSIDs, and other settings on each node. See [Accessing the Web Interface](#accessing-the-web-interface-luci) below.
 
+### Connect Your Device
+
+After setup, connect your computer, phone, or tablet to the Haven network:
+
+1. **Join the node's WiFi** — look for `green-5ghz` or `blue-5ghz` in your WiFi list
+   - Gate WiFi password: `green-5ghz`
+   - Point WiFi password: `blue-5ghz`
+2. **Verify your device got an IP** — you should receive an address in the `10.41.x.x` range
+   - **Mac/Linux:** `ifconfig` or `ip addr` — look for `10.41.x.x` on your WiFi interface
+   - **Windows:** `ipconfig` — look for `10.41.x.x` under your Wi-Fi adapter
+   - **Phone:** Settings → WiFi → tap the connected network to see your IP
+3. **Access the node's web interface** — browse to `http://<node-mesh-ip>`
+   - Find the mesh IP by running `uci get network.ahwlan.ipaddr` on the node, or check its boot screen
+
+> **Can't see the WiFi network?** See [Troubleshooting → Can't Connect from Computer or Phone](#cant-connect-from-computer-or-phone).
+>
+> **Alternative:** If the gate node is plugged into your home router, you can also connect your computer to your **regular home WiFi** and access the gate at the IP shown in your router's device list — no need to switch WiFi networks.
+
 ## Step 3: Install Reticulum (Optional)
 
 Adds an encrypted communications overlay to the mesh. Run on **each node** that needs Reticulum:
@@ -385,6 +403,35 @@ Use the IP at the end to access blue's web interface.
 ## Troubleshooting
 
 See the [Haven Guide](https://buildwithparallel.com/products/haven) for video tutorials and Discord support.
+
+### Can't Connect from Computer or Phone
+
+Your device connects to the Haven node's WiFi AP, then talks to the mesh through it. If you can't connect or can't reach anything after connecting, work through these steps:
+
+**1. WiFi network not visible**
+- Verify the 5GHz AP is running on the node: `iwinfo phy1-ap0 info`
+- If no output, restart WiFi: `wifi reload`
+- Make sure your device supports 5GHz WiFi — some older devices only see 2.4GHz networks
+- If you're close to the node and still don't see it, SSH in via Ethernet or your upstream router and check that the radio is enabled: `uci show wireless | grep disabled`
+
+**2. WiFi connects but no IP address**
+- The gate node runs the DHCP server for the whole mesh. If your device says "Connected, No Internet" or doesn't get an IP:
+  - Verify DHCP is running on the gate: `logread | grep dnsmasq`
+  - Check DHCP leases: `cat /tmp/dhcp.leases`
+  - Try forgetting the network on your device, then reconnecting
+  - On the gate node, restart DHCP: `/etc/init.d/dnsmasq restart`
+
+**3. Got an IP but can't reach the node's web interface**
+- Confirm your device has a `10.41.x.x` address (see [Connect Your Device](#connect-your-device) above)
+- If your IP is **not** in the `10.41.x.x` range, your device may have connected to a different network — check you joined `green-5ghz` or `blue-5ghz`, not your home WiFi
+- Find the node's mesh IP: `uci get network.ahwlan.ipaddr` (run on the node via SSH or connected monitor)
+- Test with ping from your device: `ping <node-mesh-ip>`
+- If ping works but the browser doesn't load, try `http://<node-mesh-ip>` (not https)
+
+**4. Connecting via your upstream/home network instead**
+- If the gate is plugged into your home router, you don't need to switch WiFi — stay on your regular home network
+- Find the gate's IP in your router's device list (look for a device named "green")
+- Browse to `http://<that-ip>` — this reaches the gate's management interface via Ethernet, bypassing WiFi entirely
 
 ### Nodes Can't Connect
 - Verify `MESH_ID`, `MESH_KEY`, `HALOW_CHANNEL` match exactly on all nodes
