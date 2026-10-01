@@ -3,7 +3,7 @@
 Build decentralized, long-range mesh networks with **Haven** — a complete open-source solution for creating self-healing IP networks that share internet access across kilometers without any central infrastructure.
 
 > [!TIP]
-> **Get on the air:** flash the correct firmware for your platform, then the **[setup guide](docs/getting-started/setup-guide.md)**. **Haven 1 / Pi 4:** use [OpenMANET](https://openmanet.org/). **Haven 2 / Pi 5:** use the [Pi 5 OpenWrt/Morse firmware](https://github.com/buildwithparallel/openwrt-morse-rpi5). **Find a node:** **[Finding & accessing nodes](docs/reference/finding-nodes.md)**. **Print a case** (100% free): **[Enclosures](#enclosures)** or [Haven case on Printables](https://www.printables.com/model/1468595-haven-case-for-raspberry-pi-based-manet-by-paralle). **Build help & community:** [Haven Guide](https://buildwithparallel.com/products/haven) (videos, schematics, Discord, support).
+> **Get on the air:** flash the correct firmware for your platform, then the **[setup guide](docs/getting-started/setup-guide.md)**. **Haven 1 / Pi 4:** use [OpenMANET](https://openmanet.net/). **Haven 2 / Pi 5:** use the [Pi 5 OpenWrt/Morse firmware](https://github.com/buildwithparallel/openwrt-morse-rpi5). **Find a node:** **[Finding & accessing nodes](docs/reference/finding-nodes.md)**. **Print a case** (100% free): **[Enclosures](#enclosures)** or [Haven case on Printables](https://www.printables.com/model/1468595-haven-case-for-raspberry-pi-based-manet-by-paralle). **Build help & community:** [Haven Guide](https://buildwithparallel.com/products/haven) (videos, schematics, Discord, support).
 
 ## What is Haven?
 
@@ -85,7 +85,7 @@ flowchart TB
 
 ## Quick Start
 
-All Haven setup scripts assume each node is flashed with fresh firmware for its hardware. **Haven 1 / Raspberry Pi 4 or CM4** nodes use [OpenMANET](https://openmanet.org/). **Haven 2 / Raspberry Pi 5** nodes require the Pi 5-specific OpenWrt/Morse firmware built from [`buildwithparallel/openwrt-morse-rpi5`](https://github.com/buildwithparallel/openwrt-morse-rpi5), or downloaded from the [v0.3.0-alpha release](https://github.com/buildwithparallel/openwrt-morse-rpi5/releases/tag/v0.3.0-alpha). Do not flash the Haven 1 / Pi 4 OpenMANET image onto a Haven 2 / Pi 5 node.
+All Haven setup scripts assume each node is flashed with fresh firmware for its hardware. **Haven 1 / Raspberry Pi 4 or CM4** nodes use [OpenMANET](https://openmanet.net/). **Haven 2 / Raspberry Pi 5** nodes require the Pi 5-specific OpenWrt/Morse firmware built from [`buildwithparallel/openwrt-morse-rpi5`](https://github.com/buildwithparallel/openwrt-morse-rpi5), or downloaded from the [v0.3.0-alpha release](https://github.com/buildwithparallel/openwrt-morse-rpi5/releases/tag/v0.3.0-alpha). Do not flash the Haven 1 / Pi 4 OpenMANET image onto a Haven 2 / Pi 5 node.
 
 Flash the image onto a microSD card using Raspberry Pi Imager, insert it into the node, and power on. If the card still looks like it has old data after flashing, use Raspberry Pi Imager's **Erase** (or SD **format/erase** utility) on the card first, then write the image.
 
@@ -171,7 +171,7 @@ MIT License - See [LICENSE](LICENSE) file.
 
 ## Acknowledgments
 
-- [OpenMANET](https://openmanet.org/) - Mesh networking firmware
+- [OpenMANET](https://openmanet.net/) - Mesh networking firmware
 - [Reticulum](https://reticulum.network/) by Mark Qvist
 - [ATAK](https://tak.gov/) by TAK Product Center
 - [Morse Micro](https://www.morsemicro.com/) - HaLow radio technology

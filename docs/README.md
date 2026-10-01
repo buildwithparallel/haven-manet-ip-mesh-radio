@@ -31,6 +31,6 @@ flowchart LR
 | **ATAK / CoT (optional)** | [integrations/atak/](../integrations/atak/README.md) |
 | **ADS-B to CoT (optional)** | [integrations/adsb/](../integrations/adsb/README.md) |
 
-Firmware is not built in this repo. **Haven 1 / Raspberry Pi 4 or CM4** uses [OpenMANET](https://openmanet.org/) / [OpenMANET firmware](https://github.com/OpenMANET/firmware). **Haven 2 / Raspberry Pi 5** requires a different OpenWrt/Morse image built from [`buildwithparallel/openwrt-morse-rpi5`](https://github.com/buildwithparallel/openwrt-morse-rpi5), or downloaded from the [v0.3.0-alpha release](https://github.com/buildwithparallel/openwrt-morse-rpi5/releases/tag/v0.3.0-alpha).
+Firmware is not built in this repo. **Haven 1 / Raspberry Pi 4 or CM4** uses [OpenMANET](https://openmanet.net/) / [OpenMANET firmware](https://github.com/OpenMANET/firmware). **Haven 2 / Raspberry Pi 5** requires a different OpenWrt/Morse image built from [`buildwithparallel/openwrt-morse-rpi5`](https://github.com/buildwithparallel/openwrt-morse-rpi5), or downloaded from the [v0.3.0-alpha release](https://github.com/buildwithparallel/openwrt-morse-rpi5/releases/tag/v0.3.0-alpha).
 
 Shell scripts for nodes live under [`scripts/`](../scripts/README.md) (`node-setup/`, `node-ops/`, `optional/`, `tools/`).

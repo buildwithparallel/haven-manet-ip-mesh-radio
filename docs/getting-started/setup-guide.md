@@ -6,7 +6,7 @@ Step-by-step instructions for setting up a Haven mesh network.
 
 > **Prerequisite:** All scripts assume each node is flashed with fresh firmware for its hardware.
 >
-> **Haven 1 / Raspberry Pi 4 or CM4:** Flash a current [OpenMANET](https://openmanet.org/) image.
+> **Haven 1 / Raspberry Pi 4 or CM4:** Flash a current [OpenMANET](https://openmanet.net/) image.
 >
 > **Haven 2 / Raspberry Pi 5:** Flash the Pi 5-specific OpenWrt/Morse firmware, not the Haven 1 / Pi 4 OpenMANET image. Build it from [`buildwithparallel/openwrt-morse-rpi5`](https://github.com/buildwithparallel/openwrt-morse-rpi5), or download the prebuilt [v0.3.0-alpha release](https://github.com/buildwithparallel/openwrt-morse-rpi5/releases/tag/v0.3.0-alpha).
 >

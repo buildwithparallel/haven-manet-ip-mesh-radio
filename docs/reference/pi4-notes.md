@@ -10,7 +10,7 @@ Haven 1 runs on the Raspberry Pi 4 or Compute Module 4 with an SPI-attached HaLo
 - **HaLow Radio**: Morse Micro MM601X via SPI (Seeed WM-WM6108 HAT)
 - **5GHz WiFi**: Cypress CYW43455 (onboard)
 - **2.4GHz WiFi**: RT5370 USB adapter (optional)
-- **Firmware**: Use a current [OpenMANET](https://openmanet.org/) image for Pi 4 / CM4. Haven 2 / Pi 5 uses a different OpenWrt/Morse firmware image; see [Pi 5 notes](pi5-notes.md#firmware).
+- **Firmware**: Use a current [OpenMANET](https://openmanet.net/) image for Pi 4 / CM4. Haven 2 / Pi 5 uses a different OpenWrt/Morse firmware image; see [Pi 5 notes](pi5-notes.md#firmware).
 
 ## HaLow HAT SPI Failures
 
