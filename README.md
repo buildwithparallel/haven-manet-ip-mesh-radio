@@ -130,6 +130,7 @@ Flash the image onto a microSD card using Raspberry Pi Imager, insert it into th
 | **[Reticulum](integrations/reticulum/README.md)** | Encrypted overlay communications |
 | **[ATAK Bridge](integrations/atak/README.md)** | ATAK/CivTAK situational awareness over Reticulum |
 | **[ADS-B to CoT](integrations/adsb/README.md)** | Aircraft tracking in TAK via RTL-SDR |
+| **[LoRa & Meshtastic](integrations/meshtastic/README.md)** | Meshtastic on a Haven: a USB LoRa radio (MeshToad) run by the Haven, or a sidecar board (Heltec V4) |
 | **[Parallel Toolchain](tools/haven-console/README.md)** | Phone web app served by the gate: field performance, live mesh view, push-to-talk |
 | **[Route view](tools/route-view/README.md)** | Live terminal view of how traffic reaches a node, made for screens and videos |
 | **[Scripts](scripts/README.md)** | Script reference and Reticulum demo tools |
