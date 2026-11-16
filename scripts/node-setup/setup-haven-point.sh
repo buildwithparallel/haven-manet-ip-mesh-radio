@@ -29,12 +29,22 @@ HALOW_CHANNEL="28"
 HALOW_HTMODE="HT80"
 
 # Client WiFi AP (2.4GHz only: USB, e.g. Panda RT5370) — use network 'ahwlan' (flat
-# 10.41.0.0/16, DHCP on the gate). This script does not configure onboard 5GHz; HaLow + USB 2.4G
+# 10.41.0.0/16, DHCP on the gate and, with POINT_DHCP, on this point too). This script does not configure onboard 5GHz; HaLow + USB 2.4G
 # is the supported combo for point nodes. Set ENABLE_2G4_AP=0 to skip the client AP.
 ENABLE_2G4_AP="1"
 WIFI_2G4_SSID="blue"
 WIFI_2G4_KEY="blueblue"
 WIFI_2G4_CHANNEL="1"
+
+# Point DHCP: this point hands out addresses on the mesh too, so a phone on its
+# Wi-Fi gets one whether or not the gate is reachable. Each point gets its own
+# pool from the last number of MESH_IP: 10.41.0.6 serves 10.41.6.100-199. The
+# gate serves 10.41.0.100-115, so the pools never overlap. Phones use this
+# point as their gateway and DNS; the point passes internet traffic on to the
+# gate when it is up. (Do not hand out the gate as the gateway: with the gate
+# gone, Android keeps probing the missing gateway and drops off the Wi-Fi.)
+# Set to 0 to leave DHCP to the gate only.
+POINT_DHCP="1"
 
 #═══════════════════════════════════════════════════════════════════════════════
 # SCRIPT START
@@ -187,10 +197,30 @@ uci delete network.ahwlan_dev.ports 2>/dev/null || true
 uci add_list network.ahwlan_dev.ports='bat0'
 uci commit network
 
-echo "[5/6] Disabling point DHCP (gate hands out 10.41.x.x) and firewall zone…"
 uci set dhcp.ahwlan=dhcp
 uci set dhcp.ahwlan.interface='ahwlan'
-uci set dhcp.ahwlan.ignore='1'
+if [ "$POINT_DHCP" = 1 ]; then
+    POOL="${MESH_IP##*.}"
+    echo "[5/6] Point DHCP 10.41.$POOL.100-199 (works with or without the gate) and firewall zone…"
+    uci set dhcp.ahwlan.ignore='0'
+    # Serve even when the gate's DHCP is also heard, so behaviour does not
+    # depend on which node booted first. Both servers give the same gateway.
+    uci set dhcp.ahwlan.force='1'
+    uci set dhcp.ahwlan.start="$((POOL * 256 + 100))"
+    uci set dhcp.ahwlan.limit='100'
+    uci set dhcp.ahwlan.leasetime='1h'
+    uci set dhcp.ahwlan.dhcpv6='disabled'
+    uci set dhcp.ahwlan.ra='disabled'
+    # No router or DNS options: dnsmasq then hands out this point's own
+    # address for both, which always answers, with or without the gate, and
+    # follows the point if its mesh IP changes.
+    uci -q delete dhcp.ahwlan.dhcp_option
+    # Never NAK a lease the gate (or another point) handed out.
+    uci set dhcp.@dnsmasq[0].authoritative='0'
+else
+    echo "[5/6] Disabling point DHCP (gate hands out 10.41.x.x) and firewall zone…"
+    uci set dhcp.ahwlan.ignore='1'
+fi
 uci commit dhcp
 uci add_list firewall.@zone[0].network='ahwlan' 2>/dev/null || true
 uci commit firewall
@@ -206,6 +236,7 @@ echo ""
 echo "  Hostname:     $HOSTNAME"
 echo "  Mesh IP:      $MESH_IP"
 echo "  Gateway:      $GATEWAY_IP"
+[ "$POINT_DHCP" = 1 ] && echo "  Point DHCP:   10.41.${MESH_IP##*.}.100-199 (phones get an address with or without the gate)"
 [ "$ENABLE_2G4_AP" = 1 ] && [ -n "$WIFI_2G4_SSID" ] && echo "  2.4GHz SSID:  $WIFI_2G4_SSID  (USB; br-ahwlan in step 6)"
 echo "  Mesh ID:      $MESH_ID"
 echo ""
