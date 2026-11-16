@@ -1,6 +1,6 @@
 # LoRa and Meshtastic on Haven
 
-LoRa runs alongside HaLow. HaLow carries the IP network (video, voice, internet), while LoRa carries small things like positions and short messages over long range and below the noise floor. It's a separate radio, so it also works as a fallback if the HaLow mesh drops. With the [Meshtastic ATAK plugin](https://meshtastic.org/docs/software/integrations/integrations-atak-plugin/), LoRa positions appear on the ATAK map.
+LoRa runs alongside HaLow. HaLow carries the IP network (video, voice, internet), while LoRa carries small things like positions and short messages over long range and below the noise floor. It's a separate radio, so it also works as a fallback if the HaLow mesh drops. LoRa positions can also appear on the ATAK map (see [Meshtastic on the ATAK map](#meshtastic-on-the-atak-map)).
 
 There are two ways to put LoRa on a Haven. They differ in **where Meshtastic runs**.
 
@@ -55,6 +55,16 @@ How a phone reaches it:
 3. **Through the Haven's USB.** Meshtastic's USB serial connection uses the same message framing as its TCP connection, so the Haven can pass one to the other (for example with `socat`, from the board's `/dev/ttyACM0` to TCP port 4403). The app then connects to the Haven's IP. Not tested yet.
 
 A sidecar can also run [RNode](https://github.com/markqvist/RNode_Firmware) firmware for Reticulum instead of Meshtastic. See the Haven guide's Reticulum section.
+
+## Meshtastic on the ATAK map
+
+The Meshtastic Android app has a built-in TAK server, so ATAK on the same phone can show Meshtastic nodes. It works with either route, as long as the app is connected to a Meshtastic radio.
+
+1. In the Meshtastic app: **Settings → Advanced → TAK Server**. Turn on **Enable Local TAK Server** (`127.0.0.1:8089`) and **Mesh to CoT Converter**, which puts ordinary Meshtastic nodes on the map, not only TAK-role nodes.
+2. **Export TAK Data Package** and import the `.zip` into ATAK. ATAK's connection dot turns green.
+3. Nodes appear once they send a position. Boards without GPS (MeshToad, MeshPocket) need a fixed position or a phone sharing its location. If a node shows in the app with no distance, tap **Request position** and shorten its position broadcast interval.
+
+Skip the old [Meshtastic ATAK plugin](https://github.com/meshtastic/ATAK-Plugin): 1.1.42 fails to bind to Meshtastic Android 2.7.14 and newer ("Failed to bind to Meshtastic IMesh service"). The app's warning about firmware 2.8.0 is for shapes, markers and routes; positions and chat work on the 2.7 firmware `meshtasticd` runs. Tested on 2026-11-16: a MeshPocket's position reached ATAK through a MeshToad on a Haven 2.
 
 ## Settings every LoRa node must share
 
