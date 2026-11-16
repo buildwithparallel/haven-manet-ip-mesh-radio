@@ -160,6 +160,10 @@ It's safe to run again. Originals are saved in `/etc/haven-backup/skyaware/`. A 
 
 If the map shows "AJAX call failed" on Android, the phone is probably sending traffic over mobile data because the Haven's Wi-Fi has no internet. Choose **Stay connected** for the Haven's Wi-Fi, or turn off mobile data.
 
+## Optional: The Map on a Tesla Screen (HTTPS by Name)
+
+The Tesla browser only loads `https://` and refuses private `10.x` addresses. [`https/`](https/README.md) serves the map at `https://<your-name>:8443` with a Let's Encrypt certificate and a `100.64.x.x` address the Tesla accepts, all working offline on the mesh. Tested on a Tesla on Nov 16, 2026.
+
 ## What to Expect
 
 - **No internet required.** ADS-B is passive RF reception — the Haven node picks up aircraft transponder signals directly over the air and multicasts the CoT data to TAK clients on its WiFi. No uplink needed.
