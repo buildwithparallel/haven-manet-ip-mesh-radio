@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Parallel Toolchain</title>
+<style>
+  :root {
+    --bg: #090909; --surface: #111118; --line: #23232e; --text: #f0f0f5; --muted: #8a8a99;
+    --blue: #0061fd; --ok: #2ecc71; --good: #9be15d; --warn: #f5a623; --bad: #ff4d4f;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.45 Roboto, -apple-system, system-ui, sans-serif; }
+  body { max-width: 600px; margin: 0 auto; padding: 14px 16px 48px; }
+  header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  header img { width: 30px; height: 30px; }
+  header h1 { font-size: 20px; margin: 0; }
+  nav { display: flex; gap: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 4px; }
+  nav button { flex: 1; background: transparent; color: var(--muted); border: 0; border-radius: 9px; padding: 10px; font: inherit; font-weight: 600; cursor: pointer; }
+  nav button.active { background: var(--blue); color: #fff; }
+  section { display: none; } section.active { display: block; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin-bottom: 12px; }
+  .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+  .big { font-size: 30px; font-weight: 700; line-height: 1.15; }
+  .route { font-size: 22px; font-weight: 700; word-break: break-word; }
+  .route .arrow { color: var(--muted); font-weight: 400; padding: 0 4px; }
+  .status { display: inline-block; margin-top: 6px; font-size: 13px; font-weight: 700; padding: 3px 10px; border-radius: 99px; }
+  .direct { background: rgba(46,204,113,.15); color: var(--ok); }
+  .relayed { background: rgba(245,166,35,.15); color: var(--warn); }
+  .none { background: rgba(255,77,79,.15); color: var(--bad); }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .muted { color: var(--muted); font-size: 14px; }
+  .small { font-size: 13px; color: var(--muted); }
+  ul.plain { list-style: none; margin: 0; padding: 0; }
+  ul.plain li { padding: 5px 0; border-top: 1px solid var(--line); font-variant-numeric: tabular-nums; font-size: 14px; }
+  ul.plain li:first-child { border-top: 0; }
+  .ok { color: var(--ok); } .bad { color: var(--bad); }
+  button.action { font: inherit; font-weight: 600; border: 0; border-radius: 10px; padding: 12px 16px; background: var(--blue); color: #fff; cursor: pointer; width: 100%; }
+  button.action.on { background: var(--ok); color: #04170b; }
+  button.action.secondary { background: #1c1c26; color: var(--text); border: 1px solid var(--line); }
+  button:disabled { opacity: .45; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+  th { text-align: left; color: var(--muted); font-weight: 500; font-size: 12px; padding: 4px 4px 4px 0; }
+  td { padding: 5px 4px 5px 0; border-top: 1px solid var(--line); }
+  .node-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .node-name { font-size: 18px; font-weight: 700; }
+  .tag { font-size: 12px; color: var(--muted); }
+  input { width: 100%; padding: 12px; font-size: 17px; border-radius: 10px; border: 1px solid var(--line); background: #0c0c12; color: var(--text); margin-bottom: 10px; }
+  #ptt { display: block; width: 200px; height: 200px; margin: 6px auto 6px; border-radius: 50%; font: inherit; font-size: 20px; font-weight: 600;
+    background: #1c1c26; border: 3px solid var(--blue); color: var(--text); touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+  #ptt.live { background: var(--blue); color: #fff; box-shadow: 0 0 0 10px rgba(0,97,253,.25); }
+  .meter { height: 6px; background: #1c1c26; border-radius: 4px; overflow: hidden; margin: 6px 0 3px; }
+  .meter > div { height: 100%; width: 0; background: var(--ok); transition: width .15s; }
+  .pstate { font-size: 12px; padding: 2px 8px; border-radius: 99px; margin-left: 6px; background: #1c1c26; color: var(--muted); }
+  .pstate.connected { background: rgba(46,204,113,.15); color: var(--ok); }
+  .pstate.failed, .pstate.disconnected { background: rgba(255,77,79,.15); color: var(--bad); }
+  .hidden { display: none !important; }
+  .top { position: sticky; top: 0; z-index: 3; background: var(--bg); padding: 8px 0 2px; margin: -8px 0 12px; }
+  .bar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .chip { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; padding: 4px 10px 4px 5px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); white-space: nowrap; max-width: 100%; }
+  .chip .ic { width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: #1c1c26; color: var(--blue); flex: none; overflow: hidden; }
+  .chip .ic svg { width: 15px; height: 15px; }
+  .chip .sub { color: var(--muted); font-weight: 500; }
+  .chip.dim { opacity: .7; }
+  /* route tab */
+  .rpick { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .rpick button { font: inherit; font-size: 14px; font-weight: 600; padding: 6px 12px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); cursor: pointer; }
+  .rpick button.on { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .rbanner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+  .rpill { font-weight: 800; font-size: 20px; letter-spacing: .06em; padding: 6px 14px; border-radius: 10px; }
+  .rpill.direct { background: var(--ok); color: #04170b; } .rpill.relayed { background: var(--warn); color: #1a1000; }
+  .rpill.lost, .rpill.none { background: var(--bad); color: #fff; } .rpill.lost { animation: pulse 1s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: .55; } }
+  .rtext { font-size: 18px; font-weight: 600; }
+  .rstats { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .rstat { font-size: 15px; font-weight: 600; padding: 5px 12px; border-radius: 99px; background: #1c1c26; }
+  .rstat.win { background: rgba(46,204,113,.18); color: var(--ok); font-size: 18px; }
+  #rSvg { width: 100%; height: auto; display: block; margin: 6px 0; }
+  #rSvg text { font-family: Roboto, -apple-system, system-ui, sans-serif; }
+  .flow { stroke-dasharray: 2 24; stroke-linecap: round; animation: flow .6s linear infinite; }
+  @keyframes flow { to { stroke-dashoffset: -26; } }
+  .breathe { animation: pulse 1s ease-in-out infinite; }
+  #rEvents li { font-size: 15px; }
+  body.present { max-width: none; padding: 16px 24px; }
+  body.present header, body.present .top, body.present .hide-present { display: none !important; }
+  body.present .rpill { font-size: 30px; } body.present .rtext { font-size: 28px; }
+  body.present .rstat { font-size: 20px; } body.present .rstat.win { font-size: 26px; }
+  #rPresent { position: fixed; right: 14px; bottom: 14px; z-index: 5; }
+  .chip.direct .ic { color: var(--ok); } .chip.relayed .ic { color: var(--warn); } .chip.none .ic { color: var(--bad); }
+  /* wide screens: use the room instead of a phone-width column */
+  @media (min-width: 960px) {
+    body { max-width: 1280px; padding: 20px 32px 48px; }
+    .top { display: flex; align-items: center; gap: 16px; padding-top: 10px; }
+    .top .bar { flex: 1 1 auto; margin-bottom: 0; }
+    .top nav { flex: 0 0 460px; }
+    #meshNodes { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 12px; align-items: start; }
+    #meshNodes > .card { margin-bottom: 0; }
+    #meshNodes > :not(.card) { grid-column: 1 / -1; }
+    #route.active { display: grid; grid-template-columns: minmax(0, 1fr) 360px; grid-template-rows: auto auto auto auto 1fr; gap: 0 16px; align-items: start; }
+    #route > .rpick { grid-column: 1 / -1; }
+    #route > .rmain { grid-column: 1; grid-row: 2 / -1; }
+    #route > .card:not(.rmain), #route > #rPresentBtn { grid-column: 2; }
+    #rSvg { max-height: calc(100vh - 300px); }
+    body.present #rSvg { max-height: calc(100vh - 160px); }
+    #field.active { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; align-items: start; }
+    #field > .small { grid-column: 1 / -1; }
+    #talk { max-width: 640px; margin: 0 auto; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <img src="parallel-mark.svg" alt="Parallel">
+  <h1>Parallel Toolchain</h1>
+</header>
+<div class="top">
+  <div class="bar" id="bar"><span class="chip"><span class="ic"></span><span class="sub">Finding your node…</span></span></div>
+  <nav>
+    <button data-tab="mesh" class="active">Mesh</button>
+    <button data-tab="route">Route</button>
+    <button data-tab="field">Performance</button>
+    <button data-tab="talk">Talk</button>
+  </nav>
+</div>
+
+<!-- FIELD -->
+<section id="field">
+  <div class="card">
+    <div class="label">You are on</div>
+    <div class="big" id="fOn">—</div>
+    <div class="small" id="fModel"></div>
+    <div class="small" id="fWifi" style="margin-top:6px"></div>
+  </div>
+  <div class="card">
+    <div class="label">Route to the gate</div>
+    <div class="route" id="fRoute">—</div>
+    <span class="status hidden" id="fStatus"></span>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <div class="label">HaLow signal</div>
+      <div class="big" id="fHalow">—</div>
+      <div class="small">at your node, toward the gate</div>
+    </div>
+    <div class="card">
+      <div class="label">Route speed</div>
+      <div class="big" id="fTp">—</div>
+      <div class="small">batman-adv estimate</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="label">Speed test to the gate</div>
+    <div class="grid" style="margin:6px 0 10px">
+      <div><div class="small">Download</div><div class="big" id="sDown">—</div></div>
+      <div><div class="small">Upload</div><div class="big" id="sUp">—</div></div>
+    </div>
+    <button class="action" id="sRun">Run test</button>
+    <div class="small" style="margin-top:8px">Stand still while it runs. It sends 4 MB down and 2 MB up across every hop to the gate, and stops at the gate, so the internet line is not included. On a 1 or 2 MHz channel the test fills the link while it runs.</div>
+  </div>
+  <div class="card">
+    <div class="label">Internet, from the gate</div>
+    <div class="small" style="margin-bottom:6px">A new line every 5 seconds means this phone got an answer back across the mesh.</div>
+    <ul class="plain" id="pings"></ul>
+  </div>
+  <div class="small" id="fNote"></div>
+</section>
+
+<!-- MESH -->
+<section id="mesh" class="active">
+  <div class="small" style="margin-bottom:10px">Every node, refreshed every few seconds. Each route runs from that node to the gate. Signal is what that node hears from each neighbor over HaLow.</div>
+  <div id="meshNodes"></div>
+</section>
+
+<!-- ROUTE -->
+<section id="route">
+  <div class="rpick hide-present" id="rPick"></div>
+  <div class="card rmain">
+    <div class="rbanner"><span class="rpill" id="rPill">…</span><span class="rtext" id="rText"></span></div>
+    <div class="rstats" id="rStats"></div>
+    <svg id="rSvg" viewBox="0 0 1000 570" role="img" aria-label="Route diagram"></svg>
+  </div>
+  <div class="card hide-present">
+    <div class="label">Paths the gate knows</div>
+    <table id="rAlts"></table>
+    <div class="small" style="margin-top:6px">batman-adv checks every path each second and uses the fastest. The others are backups, ready to take over.</div>
+  </div>
+  <div class="card">
+    <div class="label">What happened</div>
+    <ul class="plain" id="rEvents"></ul>
+  </div>
+  <button class="action secondary hide-present" id="rPresentBtn">Present full screen</button>
+</section>
+<button class="action secondary hidden" id="rPresent" style="width:auto">Exit</button>
+
+<!-- TALK -->
+<section id="talk">
+  <div class="card" id="tJoin">
+    <div class="label">Your name</div>
+    <input id="tName" maxlength="32" autocomplete="off" placeholder="e.g. Tim">
+    <button class="action" id="tJoinBtn">Join</button>
+    <div class="small" id="tJoinNote" style="margin-top:8px">Audio goes phone to phone over the mesh. Allow the microphone to talk, or decline it to listen only.</div>
+  </div>
+  <div class="card hidden" id="tPanel">
+    <button id="ptt">Hold to talk</button>
+    <div class="small" style="text-align:center" id="tPttHint">Hold the button, or the space bar, while you speak.</div>
+    <button class="action secondary hidden" id="tUnmute" style="margin-top:10px">Tap to hear audio</button>
+  </div>
+  <div class="card">
+    <div class="label">Count track</div>
+    <div class="small" style="margin-bottom:8px">The gate joins the channel and plays a counting recording. Listen from another node's Wi-Fi and the count crosses HaLow, so a reroute shows up as a skip.</div>
+    <button class="action secondary" id="tCount">Play count from the gate</button>
+  </div>
+  <div class="card hidden" id="tPeersCard">
+    <div class="label">On the channel</div>
+    <ul class="plain" id="tPeers"></ul>
+  </div>
+  <div class="small" id="tStatus"></div>
+</section>
+
+<script>
+"use strict";
+const $ = (s) => document.querySelector(s);
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const dbm = (v) => (v == null ? "—" : Math.round(v) + " dBm");
+const sigClass = (v) => (v == null ? "" : v >= -65 ? "ok" : v >= -80 ? "" : "bad");
+let tab = "mesh";
+
+async function getJSON(url, ms = 6000) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms);
+  try {
+    const res = await fetch(url, { cache: "no-store", signal: ctrl.signal });
+    if (!res.ok) throw new Error(res.status);
+    return await res.json();
+  } finally { clearTimeout(t); }
+}
+
+// ---------- tabs ----------
+document.querySelectorAll("nav button").forEach((b) => b.addEventListener("click", () => {
+  tab = b.dataset.tab;
+  document.querySelectorAll("nav button").forEach((x) => x.classList.toggle("active", x === b));
+  document.querySelectorAll("section").forEach((s) => s.classList.toggle("active", s.id === tab));
+  try { localStorage.setItem("parallel-toolchain-tab", tab); } catch (_) {}
+  if (tab === "mesh") refreshMesh();
+  if (tab === "route") setTimeout(refreshRoute, 0);   // after the route code below has loaded
+  if (tab !== "route" && document.body.classList.contains("present")) setPresent(false);
+}));
+// A link can open a tab directly (…:8443/#route); otherwise reopen the last one.
+try {
+  const want = location.hash.slice(1) || localStorage.getItem("parallel-toolchain-tab");
+  if (want) document.querySelector(`nav button[data-tab="${CSS.escape(want)}"]`)?.click();
+} catch (_) {}
+
+// Hardware model in words, and icons for the status bar.
+function shortModel(model) {
+  if (!model) return "";
+  if (/heltec/i.test(model)) return model.replace(/-V\d+$/i, "") + " HaLow dongle";
+  if (/rpi5|raspberry pi 5/i.test(model)) return "Haven 2 · Raspberry Pi 5";
+  if (/rpi4|rpi|raspberry/i.test(model)) return "Haven 1 · Raspberry Pi 4";
+  return model;
+}
+const ICON = {
+  wifi: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M2 8.5a15 15 0 0 1 20 0"/><path d="M5.5 12a10 10 0 0 1 13 0"/><path d="M9 15.5a5 5 0 0 1 6 0"/><circle cx="12" cy="19" r="1.2" fill="currentColor"/></svg>',
+  halow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 10v12"/><circle cx="12" cy="8" r="2"/><path d="M8 4a6 6 0 0 0 0 8"/><path d="M16 4a6 6 0 0 1 0 8"/><path d="M5 1.5a10 10 0 0 0 0 13"/><path d="M19 1.5a10 10 0 0 1 0 13"/></svg>',
+  route: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="5" cy="19" r="2.2"/><circle cx="19" cy="5" r="2.2"/><path d="M7.2 19H15a3.5 3.5 0 0 0 0-7H9a3.5 3.5 0 0 1 0-7h7.8"/></svg>',
+};
+function band(mhz) { return mhz == null ? "" : mhz < 3000 ? "2.4 GHz" : mhz < 5925 ? "5 GHz" : "6 GHz"; }
+function chip(icon, main, sub, cls) {
+  return '<span class="chip ' + (cls || "") + '"><span class="ic">' + icon + "</span><span>" + main +
+    (sub ? ' <span class="sub">' + sub + "</span>" : "") + "</span></span>";
+}
+function renderBar(d) {
+  const c = [];
+  // Every radio on the node this phone is on, with its exact frequency.
+  (d.aps || []).forEach((a) => {
+    const sub = [a.ch ? "ch " + a.ch : "", a.w ? a.w + " MHz wide" : "", a.mine ? (d.wifi ? dbm(d.wifi) : "") : "other network"].filter(Boolean).join(" · ");
+    c.push(chip(ICON.wifi, esc(a.ssid || "Wi-Fi") + " · " + (a.mhz != null ? a.mhz + " MHz" : band(a.mhz)), sub, a.mine ? "" : "dim"));
+  });
+  const h = d.halowch;
+  if (h) c.push(chip(ICON.halow, "HaLow · " + h.mhz.toFixed(1) + " MHz",
+    [h.ch != null ? "ch " + h.ch : "", h.w ? h.w + " MHz wide" : "", h.pw && h.pw !== h.w ? h.pw + " MHz primary" : ""].filter(Boolean).join(" · ")));
+  if (d.chain) {
+    const cls = d.hops === 0 ? "direct" : !d.complete ? "none" : d.hops === 1 ? "direct" : "relayed";
+    const txt = d.hops === 0 ? "On the gate" : !d.complete ? "No full route" : d.hops === 1 ? "Direct to gate" : "Relayed, " + d.hops + " hops";
+    c.push(chip(ICON.route, txt, d.tp != null && d.hops ? d.tp + " Mb/s" : "", cls));
+  }
+  if (!c.length) c.push(chip("", '<span class="sub">' + esc(d.note || "Finding your node…") + "</span>"));
+  $("#bar").innerHTML = c.join("");
+}
+
+function routeHTML(chain) {
+  return chain.map(esc).join('<span class="arrow">→</span>');
+}
+
+// ---------- field ----------
+async function refreshField() {
+  try {
+    const d = await getJSON("/api/field");
+    if (d.on && d.on !== d.gate) myNode = d.on;
+    renderBar(d);
+    $("#fOn").textContent = d.on || "—";
+    $("#fModel").textContent = shortModel(d.model);
+    $("#fWifi").textContent = d.wifi != null ? "Your Wi-Fi signal at this node: " + dbm(d.wifi) : "";
+    const st = $("#fStatus");
+    if (d.chain) {
+      $("#fRoute").innerHTML = routeHTML(d.chain) + (d.complete ? "" : '<span class="arrow">→</span>?');
+      st.classList.remove("hidden", "direct", "relayed", "none");
+      if (d.hops === 0) { st.textContent = "You are on the gate"; st.classList.add("direct"); }
+      else if (!d.complete) { st.textContent = "No full route"; st.classList.add("none"); }
+      else if (d.hops === 1) { st.textContent = "Direct, 1 hop"; st.classList.add("direct"); }
+      else { st.textContent = "Relayed, " + d.hops + " hops"; st.classList.add("relayed"); }
+    } else {
+      $("#fRoute").textContent = "—"; st.classList.add("hidden");
+    }
+    const h = $("#fHalow");
+    h.textContent = d.hops === 0 ? "—" : dbm(d.halow);
+    h.className = "big " + sigClass(d.halow);
+    $("#fTp").textContent = d.tp != null && d.hops !== 0 ? d.tp + " Mb/s" : "—";
+    $("#fNote").textContent = d.note || "Updated " + new Date().toLocaleTimeString();
+  } catch (e) {
+    $("#bar").innerHTML = chip("", '<span class="sub">No answer from the gate</span>', "", "none");
+    $("#fNote").textContent = "No answer from the gate at " + new Date().toLocaleTimeString() + ".";
+  }
+}
+
+let pingN = 0;
+async function pingOnce() {
+  const li = document.createElement("li");
+  const when = new Date().toLocaleTimeString();
+  try {
+    const d = await getJSON("/api/ping?n=" + (pingN++ % 3), 4500);
+    li.innerHTML = '<span class="small">' + when + "</span>  " +
+      (d.ok ? '<span class="ok">' + esc(d.name) + " " + (d.ms < 10 ? d.ms.toFixed(1) : Math.round(d.ms)) + " ms</span>"
+            : '<span class="bad">' + esc(d.name) + " no reply</span>");
+  } catch (_) {
+    li.innerHTML = '<span class="small">' + when + '</span>  <span class="bad">no answer from the gate</span>';
+  }
+  $("#pings").prepend(li);
+  while ($("#pings").children.length > 20) $("#pings").lastChild.remove();
+}
+
+async function speedTest() {
+  const btn = $("#sRun");
+  btn.disabled = true; $("#sDown").textContent = "…"; $("#sUp").textContent = "—";
+  try {
+    let t = performance.now();
+    const res = await fetch("/api/speed/down?mb=4&r=" + Math.random(), { cache: "no-store" });
+    const got = (await res.arrayBuffer()).byteLength;
+    $("#sDown").textContent = ((got * 8) / ((performance.now() - t) / 1000) / 1e6).toFixed(1) + " Mb/s";
+    $("#sUp").textContent = "…";
+    const body = new Uint8Array(2 << 20);
+    t = performance.now();
+    await fetch("/api/speed/up", { method: "POST", body, cache: "no-store" });
+    $("#sUp").textContent = ((body.length * 8) / ((performance.now() - t) / 1000) / 1e6).toFixed(1) + " Mb/s";
+  } catch (e) {
+    if ($("#sDown").textContent === "…") $("#sDown").textContent = "failed";
+    $("#sUp").textContent = "failed";
+  }
+  btn.disabled = false;
+}
+$("#sRun").addEventListener("click", speedTest);
+
+// ---------- route ----------
+let rTo = null, rData = null, rAt = 0, myNode = null, rSlots = {}, rSlotsKey = "";
+try { rTo = localStorage.getItem("parallel-toolchain-route"); } catch (_) {}
+const RICON = {
+  phone: '<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>',
+  relay: '<path d="M12 10v12"/><circle cx="12" cy="8" r="2"/><path d="M8 4a6 6 0 0 0 0 8"/><path d="M16 4a6 6 0 0 1 0 8"/><path d="M5 1.5a10 10 0 0 0 0 13"/><path d="M19 1.5a10 10 0 0 1 0 13"/>',
+  gate: '<circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19"/><path d="M12 2.5a14 14 0 0 1 0 19"/><path d="M12 2.5a14 14 0 0 0 0 19"/>',
+};
+const COL = { ok: "#2ecc71", warn: "#f5a623", bad: "#ff4d4f", gate: "#38b6ff", idle: "#5a5a6a" };
+
+function rPickDest(d) {
+  const names = d.nodes.filter((n) => !n.gate).map((n) => n.n);
+  if (rTo && names.includes(rTo)) return rTo;
+  if (myNode && names.includes(myNode)) return myNode;
+  return names.includes("blue") ? "blue" : names[0] || null;
+}
+
+function svgNode(x, y, name, sub, color, icon, extra) {
+  return '<g' + (extra || "") + '>' +
+    '<circle cx="' + x + '" cy="' + y + '" r="58" fill="#111118" stroke="' + color + '" stroke-width="6"/>' +
+    '<g transform="translate(' + (x - 26) + "," + (y - 26) + ') scale(2.17)" fill="none" stroke="' + color + '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + icon + "</g>" +
+    '<text x="' + x + '" y="' + (y + 98) + '" text-anchor="middle" fill="#f0f0f5" font-size="34" font-weight="700">' + esc(name) + "</text>" +
+    '<text x="' + x + '" y="' + (y + 126) + '" text-anchor="middle" fill="' + (color === COL.bad ? COL.bad : "#8a8a99") + '" font-size="20" font-weight="600">' + esc(sub) + "</text></g>";
+}
+
+function renderRoute() {
+  const d = rData;
+  if (!d) return;
+  const byName = {};
+  d.nodes.forEach((n) => (byName[n.n] = n));
+  $("#rPick").innerHTML = d.nodes.filter((n) => !n.gate).map((n) =>
+    '<button data-n="' + esc(n.n) + '" class="' + (n.n === d.to ? "on" : "") + '">' + esc(n.n) + "</button>").join("");
+  const lostSecs = d.lostMs != null ? (d.lostMs + (Date.now() - rAt)) / 1000 : 0;
+
+  // banner
+  const pill = $("#rPill");
+  pill.className = "rpill " + (d.status || "none");
+  const path = d.path || [];
+  if (d.status === "direct") { pill.textContent = "DIRECT"; $("#rText").textContent = path.join(" → ") + ", one HaLow hop"; }
+  else if (d.status === "relayed") { pill.textContent = "RELAYED"; $("#rText").textContent = "through " + path.slice(1, -1).join(", ") + ", " + (path.length - 1) + " HaLow hops"; }
+  else if (d.status === "lost") { pill.textContent = "LINK LOST"; $("#rText").textContent = d.lost + " went silent · finding another path… " + lostSecs.toFixed(1) + " s"; }
+  else { pill.textContent = "NO ROUTE"; $("#rText").textContent = d.to ? d.to + " cannot reach " + d.gate : "Pick a node"; }
+
+  const stats = [];
+  const rr = [...(d.events || [])].reverse().find((e) => e.kind === "reroute" && e.secs != null && e.node === d.to);
+  if (rr && Date.now() - rr.t < 60000) stats.push('<span class="rstat win">Rerouted in ' + rr.secs.toFixed(1) + " s</span>");
+  if (d.tp != null && d.status !== "lost") stats.push('<span class="rstat">' + d.tp + " Mb/s</span>");
+  $("#rStats").innerHTML = stats.join("");
+
+  // layout: the node on the left, the gate on the right
+  const pos = {}, W = 1000, L = 150, R = 850, MID = 250, TOP = 95, BOT = 405;
+  const draw = path.length ? path : [d.to, d.gate].filter(Boolean);
+  const middles = d.nodes.filter((n) => !n.gate && n.n !== d.to).map((n) => n.n);
+  if (d.to && d.gate && draw.length <= 3 && middles.length <= 2) {
+    // A diamond: one middle node above, one below. They keep their places
+    // between refreshes, so a reroute moves the line, not the nodes.
+    const key = d.to + "|" + [...middles].sort().join(",");
+    if (rSlotsKey !== key) { rSlotsKey = key; rSlots = {}; }
+    if (!Object.keys(rSlots).length) {
+      const relay = draw.length === 3 ? draw[1] : null;
+      const order = relay ? [relay, ...middles.filter((m) => m !== relay)] : [...middles].sort();
+      order.forEach((m, i) => (rSlots[m] = i === 0 ? TOP : BOT));
+    }
+    pos[d.to] = [L, MID];
+    pos[d.gate] = [R, MID];
+    middles.forEach((m) => (pos[m] = [W / 2, rSlots[m] ?? BOT]));
+  } else {
+    // Longer paths: relays across the top, everything else along the bottom.
+    draw.forEach((n, i) => {
+      if (i === 0) pos[n] = [L, MID];
+      else if (i === draw.length - 1) pos[n] = [R, MID];
+      else pos[n] = [L + ((R - L) * i) / (draw.length - 1), TOP];
+    });
+    const others = d.nodes.filter((n) => !pos[n.n] && !n.gate).map((n) => n.n);
+    others.forEach((n, i) => { pos[n] = [W / 2 + (i - (others.length - 1) / 2) * 230, BOT]; });
+  }
+
+  let s = "";
+  // backups, faint
+  (d.alts || []).filter((a) => !a.best && !a.stale).forEach((a) => {
+    if (a.via === "direct") { if (pos[d.to] && pos[d.gate]) s += line(pos[d.to], pos[d.gate], COL.idle, 4, "10 12"); }
+    else if (pos[a.via] && pos[d.to] && pos[d.gate]) { s += line(pos[d.to], pos[a.via], COL.idle, 4, "10 12") + line(pos[a.via], pos[d.gate], COL.idle, 4, "10 12"); }
+  });
+  // the path in use, flowing toward the gate
+  const lost = d.status === "lost";
+  for (let i = 0; i + 1 < path.length; i++) {
+    const a = pos[path[i]], b = pos[path[i + 1]];
+    const c = lost ? COL.bad : d.status === "relayed" ? COL.warn : COL.ok;
+    s += line(a, b, c, 12, null, 0.28);
+    if (!lost) s += line(a, b, c, 12, null, 1, "flow");
+    else {
+      s += line(a, b, c, 5, "14 12");
+      if ((byName[path[i]] && byName[path[i]].silent) || (byName[path[i + 1]] && byName[path[i + 1]].silent)) {
+        const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
+        s += '<path d="M' + (mx - 16) + " " + (my - 16) + "l32 32M" + (mx + 16) + " " + (my - 16) + 'l-32 32" stroke="' + COL.bad + '" stroke-width="8" stroke-linecap="round"/>';
+      }
+    }
+  }
+  // nodes
+  Object.keys(pos).forEach((n) => {
+    const info = byName[n] || {};
+    const [x, y] = pos[n];
+    const onPath = path.includes(n);
+    let color = info.gate ? COL.gate : onPath ? (d.status === "relayed" && n !== path[0] ? COL.warn : COL.ok) : COL.idle;
+    let sub = info.gate ? "gate · uplink" : n === d.to ? "clients" : onPath ? "relaying" : "standby";
+    if (info.silent) { color = COL.bad; sub = "SILENT" + (info.last != null ? " " + Math.round(info.last / 1000) + " s" : ""); }
+    const icon = info.gate ? RICON.gate : n === d.to ? RICON.phone : RICON.relay;
+    s += svgNode(x, y, n, sub, color, icon, info.silent ? ' class="breathe"' : "");
+  });
+  $("#rSvg").innerHTML = s;
+
+  // paths table
+  $("#rAlts").innerHTML = "<tr><th>Path</th><th>Speed</th><th></th></tr>" + (d.alts || []).map((a) =>
+    "<tr><td>" + (a.via === "direct" ? "direct" : "via " + esc(a.via)) + "</td><td>" + (a.tp != null ? a.tp + " Mb/s" : "—") + "</td><td>" +
+    (a.best ? (a.stale ? '<span class="bad">in use, silent</span>' : '<span class="ok">in use</span>') : a.stale ? '<span class="bad">silent</span>' : '<span class="small">backup</span>') +
+    "</td></tr>").join("");
+
+  // events, newest first
+  $("#rEvents").innerHTML = [...(d.events || [])].reverse().map((e) => {
+    const t = new Date(e.t).toLocaleTimeString();
+    let m = "";
+    if (e.kind === "silent") m = '<span class="bad">' + esc(e.node) + " went silent</span>";
+    else if (e.kind === "back") m = '<span class="ok">' + esc(e.node) + " is back</span>";
+    else if (e.kind === "noroute") m = '<span class="bad">' + esc(e.node) + ": no route</span>";
+    else if (e.kind === "reroute") m = "<b>Rerouted:</b> " + esc((e.path || []).join(" → ")) + (e.secs != null ? ' <span class="ok">' + e.secs.toFixed(1) + " s after " + esc(e.by) + " went silent</span>" : "");
+    else m = "Route: " + esc((e.path || []).join(" → "));
+    return '<li><span class="small">' + t + "</span>  " + m + "</li>";
+  }).join("") || '<li class="small">Nothing yet.</li>';
+}
+
+function line(a, b, color, w, dash, opacity, cls) {
+  return '<line x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b[0] + '" y2="' + b[1] + '" stroke="' + color + '" stroke-width="' + w + '"' +
+    (dash ? ' stroke-dasharray="' + dash + '"' : "") + (opacity != null ? ' opacity="' + opacity + '"' : "") + (cls ? ' class="' + cls + '"' : "") + ' stroke-linecap="round"/>';
+}
+
+async function refreshRoute() {
+  try {
+    let d = await getJSON("/api/route" + (rTo ? "?to=" + encodeURIComponent(rTo) : ""), 3000);
+    const want = rPickDest(d);
+    if (want && d.to !== want) { rTo = want; d = await getJSON("/api/route?to=" + encodeURIComponent(want), 3000); }
+    rData = d; rAt = Date.now();
+    renderRoute();
+  } catch (_) {
+    $("#rText").textContent = "No answer from the gate at " + new Date().toLocaleTimeString() + ".";
+  }
+}
+$("#rPick").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-n]");
+  if (!b) return;
+  rTo = b.dataset.n;
+  try { localStorage.setItem("parallel-toolchain-route", rTo); } catch (_) {}
+  refreshRoute();
+});
+function setPresent(on) {
+  document.body.classList.toggle("present", on);
+  $("#rPresent").classList.toggle("hidden", !on);
+  try { if (on) document.documentElement.requestFullscreen?.(); else if (document.fullscreenElement) document.exitFullscreen(); } catch (_) {}
+}
+$("#rPresentBtn").addEventListener("click", () => setPresent(true));
+$("#rPresent").addEventListener("click", () => setPresent(false));
+document.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement) setPresent(false); });
+setInterval(() => { if (tab === "route" && rData && rData.status === "lost") renderRoute(); }, 100);
+(async function routeLoop() {
+  for (;;) {
+    const t = performance.now();
+    if (tab === "route") await refreshRoute();
+    const left = 1000 - (performance.now() - t);
+    if (left > 0) await sleep(left);
+  }
+})();
+
+// ---------- mesh ----------
+async function refreshMesh() {
+  try {
+    const d = await getJSON("/api/mesh");
+    $("#meshNodes").innerHTML = d.nodes.map((n) => {
+      let route = "";
+      if (n.role === "gate") route = '<span class="status direct">Gate</span>';
+      else if (n.route) {
+        const hops = n.route.length - 1;
+        const cls = !n.complete ? "none" : hops === 1 ? "direct" : "relayed";
+        const label = !n.complete ? "No full route" : hops === 1 ? "Direct" : "Relayed, " + hops + " hops";
+        route = '<div class="route" style="font-size:16px;margin-top:6px">' + routeHTML(n.route) + "</div>" +
+          '<span class="status ' + cls + '">' + label + (n.tp != null ? " · " + n.tp + " Mb/s" : "") + "</span>";
+      }
+      const links = n.links.length ? '<table style="margin-top:10px"><tr><th>Hears</th><th>Signal</th><th>Sends</th><th>Receives</th><th>Link</th></tr>' +
+        n.links.map((l) => "<tr><td>" + esc(l.n) + '</td><td class="' + sigClass(l.s) + '">' + dbm(l.s) + "</td><td>" +
+          (l.tx != null ? l.tx + " Mb/s" : "—") + "</td><td>" + (l.rx != null ? l.rx + " Mb/s" : "—") + "</td><td>" + esc(l.l === "ESTAB" ? "up" : l.l) + "</td></tr>").join("") +
+        "</table>" : "";
+      return '<div class="card"><div class="node-head">' +
+        '<span><span class="node-name">' + esc(n.n || n.ip) + '</span><div class="tag">' + esc(shortModel(n.model)) + "</div></span>" +
+        '<span class="tag">' + esc(n.ip) + (n.txp != null ? " · " + n.txp + " dBm TX" : "") + "</span></div>" +
+        (n.err ? '<span class="status none">' + esc(n.err) + "</span>" : route + links) + "</div>";
+    }).join("") || '<div class="muted">No nodes found yet.</div>';
+  } catch (_) {
+    $("#meshNodes").insertAdjacentHTML("afterbegin", '<div class="small bad">No answer from the gate at ' + new Date().toLocaleTimeString() + ".</div>");
+  }
+}
+
+(async function loop() {
+  for (;;) {
+    const t = performance.now();
+    await refreshField();   // also feeds the status bar on every tab
+    if (tab === "mesh") await refreshMesh();
+    const left = 3000 - (performance.now() - t);
+    if (left > 0) await sleep(left);
+  }
+})();
+(async function pings() {
+  for (;;) {
+    const t = performance.now();
+    if (tab === "field") await pingOnce();
+    const left = 5000 - (performance.now() - t);
+    if (left > 0) await sleep(left);
+  }
+})();
+
+// ---------- talk ----------
+const myId = crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now();
+const peers = new Map();
+let ctx, dest, micGain, outStream, hasMic = false, joined = false;
+try { $("#tName").value = localStorage.getItem("haven-talk-name") || ""; } catch (_) {}
+
+async function post(to, data) {
+  try {
+    await fetch("/signal", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ from: myId, to, data }) });
+  } catch (e) { $("#tStatus").textContent = "Signal failed: " + e.message; }
+}
+
+// Ask the other side for Opus with forward error correction, which hides
+// short bursts of loss instead of producing robotic gaps.
+function preferFec(sdp) {
+  const m = sdp.match(/a=rtpmap:(\d+) opus\/48000/i);
+  if (!m) return sdp;
+  const re = new RegExp("a=fmtp:" + m[1] + " ([^\\r\\n]*)");
+  const extra = { useinbandfec: "1", maxaveragebitrate: "48000", stereo: "0" };
+  if (re.test(sdp)) return sdp.replace(re, (line, params) => {
+    const kv = Object.fromEntries(params.split(";").filter(Boolean).map((p) => p.trim().split("=")));
+    Object.assign(kv, extra);
+    return "a=fmtp:" + m[1] + " " + Object.entries(kv).map(([k, v]) => k + "=" + v).join(";");
+  });
+  return sdp.replace(m[0], m[0] + "\r\na=fmtp:" + m[1] + " " + Object.entries(extra).map(([k, v]) => k + "=" + v).join(";"));
+}
+const sendDesc = (id, d) => post(id, { sdp: { type: d.type, sdp: preferFec(d.sdp) } });
+
+function makePeer(id, name, initiator) {
+  const pc = new RTCPeerConnection({ iceServers: [] });
+  const entry = { name: name || "guest", pc, audio: null, pending: [], stats: {} };
+  peers.set(id, entry);
+  outStream.getTracks().forEach((t) => pc.addTrack(t, outStream));
+  pc.onicecandidate = (e) => { if (e.candidate) post(id, { candidate: e.candidate.toJSON() }); };
+  pc.ontrack = (e) => {
+    if (!entry.audio) { entry.audio = new Audio(); entry.audio.autoplay = true; entry.audio.playsInline = true; document.body.appendChild(entry.audio); }
+    entry.audio.srcObject = e.streams[0] || new MediaStream([e.track]);
+    entry.audio.play().catch(() => $("#tUnmute").classList.remove("hidden"));
+  };
+  pc.onconnectionstatechange = () => { renderPeers(); if (pc.connectionState === "failed" && myId < id) negotiate(id, true); };
+  if (initiator) negotiate(id, false);
+  renderPeers();
+  return entry;
+}
+
+async function negotiate(id, iceRestart) {
+  const e = peers.get(id); if (!e) return;
+  await e.pc.setLocalDescription(await e.pc.createOffer({ iceRestart }));
+  sendDesc(id, e.pc.localDescription);
+}
+
+async function onSignal(from, data, fromName) {
+  let e = peers.get(from) || makePeer(from, fromName, false);
+  const pc = e.pc;
+  if (data.sdp) {
+    await pc.setRemoteDescription(data.sdp);
+    for (const c of e.pending.splice(0)) await pc.addIceCandidate(c).catch(() => {});
+    if (data.sdp.type === "offer") { await pc.setLocalDescription(await pc.createAnswer()); sendDesc(from, pc.localDescription); }
+  } else if (data.candidate) {
+    if (pc.remoteDescription) await pc.addIceCandidate(data.candidate).catch(() => {});
+    else e.pending.push(data.candidate);
+  }
+}
+
+function dropPeer(id) {
+  const e = peers.get(id); if (!e) return;
+  e.pc.close(); e.audio?.remove(); peers.delete(id); renderPeers();
+}
+
+const names = new Map();
+function renderPeers() {
+  const ul = $("#tPeers");
+  if (!peers.size) { ul.innerHTML = '<li class="small">Nobody else yet.</li>'; return; }
+  ul.innerHTML = [...peers.entries()].map(([id, p]) => {
+    const s = p.stats, st = p.pc.connectionState;
+    return "<li><b>" + esc(names.get(id) || p.name) + '</b><span class="pstate ' + st + '">' + st + "</span>" +
+      '<div class="meter"><div style="width:' + Math.min(100, Math.round((s.level || 0) * 300)) + '%"></div></div>' +
+      '<div class="small">' + (s.rtt != null ? "round trip " + s.rtt + " ms · " : "") + (s.jitter != null ? "jitter " + s.jitter + " ms · " : "") +
+      (s.lossPct != null ? "loss " + s.lossPct + "%" : "waiting for audio") + "</div></li>";
+  }).join("");
+}
+
+async function pollStats() {
+  for (const p of peers.values()) {
+    try {
+      (await p.pc.getStats()).forEach((r) => {
+        if (r.type === "inbound-rtp" && r.kind === "audio") {
+          const prev = p.stats.prev || { lost: r.packetsLost, recv: r.packetsReceived };
+          const lost = r.packetsLost - prev.lost, recv = r.packetsReceived - prev.recv;
+          p.stats.lossPct = lost + recv > 0 ? Math.max(0, Math.round((100 * lost) / (lost + recv))) : 0;
+          p.stats.jitter = r.jitter != null ? Math.round(r.jitter * 1000) : null;
+          p.stats.level = r.audioLevel || 0;
+          p.stats.prev = { lost: r.packetsLost, recv: r.packetsReceived };
+        }
+        if (r.type === "candidate-pair" && r.nominated && r.currentRoundTripTime != null) p.stats.rtt = Math.round(r.currentRoundTripTime * 1000);
+      });
+    } catch (_) {}
+  }
+  renderPeers();
+}
+
+function onEvent(m) {
+  if (m.type === "welcome") { for (const p of m.peers) { names.set(p.id, p.name); if (!peers.has(p.id)) makePeer(p.id, p.name, true); } $("#tStatus").textContent = "On the channel."; }
+  else if (m.type === "join") { names.set(m.id, m.name); $("#tStatus").textContent = m.name + " joined."; }
+  else if (m.type === "leave") { $("#tStatus").textContent = (names.get(m.id) || "Someone") + " left."; dropPeer(m.id); }
+  else if (m.type === "signal") onSignal(m.from, m.data, names.get(m.from)).catch((e) => { $("#tStatus").textContent = "Signal error: " + e.message; });
+}
+
+async function join() {
+  const name = $("#tName").value.trim() || "guest";
+  try { localStorage.setItem("haven-talk-name", name); } catch (_) {}
+  $("#tJoinBtn").disabled = true;
+  ctx = new (window.AudioContext || window.webkitAudioContext)();
+  await ctx.resume();
+  dest = ctx.createMediaStreamDestination();
+  micGain = ctx.createGain(); micGain.gain.value = 0; micGain.connect(dest);
+  outStream = dest.stream;
+  try {
+    const mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+    ctx.createMediaStreamSource(mic).connect(micGain);
+    hasMic = true;
+  } catch (e) {
+    $("#ptt").disabled = true;
+    $("#tPttHint").textContent = "Listening only. Microphone unavailable: " + e.message;
+  }
+  try { if (navigator.wakeLock) await navigator.wakeLock.request("screen"); } catch (_) {}
+  $("#tJoin").classList.add("hidden"); $("#tPanel").classList.remove("hidden"); $("#tPeersCard").classList.remove("hidden");
+  joined = true; renderPeers();
+  const es = new EventSource("/events?id=" + encodeURIComponent(myId) + "&name=" + encodeURIComponent(name));
+  es.onmessage = (e) => onEvent(JSON.parse(e.data));
+  es.onerror = () => { $("#tStatus").textContent = "Lost contact with the gate. Retrying…"; };
+  setInterval(pollStats, 2000);
+}
+
+function talk(on) {
+  if (!hasMic) return;
+  micGain.gain.setTargetAtTime(on ? 1 : 0, ctx.currentTime, 0.01);
+  $("#ptt").classList.toggle("live", on);
+  $("#ptt").textContent = on ? "Talking…" : "Hold to talk";
+}
+
+async function countState(on) {
+  const btn = $("#tCount");
+  btn.disabled = true;
+  // Give up after a few seconds so a request lost during a reroute cannot
+  // leave the button stuck, then read the real state from the gate.
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 5000);
+  try {
+    const opts = on === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ on }) };
+    const d = await (await fetch("/api/count", { ...opts, cache: "no-store", signal: ctrl.signal })).json();
+    btn.classList.toggle("on", d.on);
+    btn.textContent = d.on ? "Stop the count" : "Play count from the gate";
+    if (on && !joined) $("#tStatus").textContent = "Join above to hear it on this phone.";
+  } catch (_) {
+    $("#tStatus").textContent = "The gate did not answer. Try again.";
+    if (on !== undefined) setTimeout(() => countState(), 1000);
+  } finally { clearTimeout(t); }
+  btn.disabled = false;
+}
+$("#tCount").addEventListener("click", () => countState(!$("#tCount").classList.contains("on")));
+countState();
+
+$("#tJoinBtn").addEventListener("click", () => join().catch((e) => { $("#tStatus").textContent = "Join failed: " + e.message; $("#tJoinBtn").disabled = false; }));
+$("#tUnmute").addEventListener("click", () => { for (const p of peers.values()) p.audio?.play().catch(() => {}); $("#tUnmute").classList.add("hidden"); });
+const ptt = $("#ptt");
+ptt.addEventListener("pointerdown", (e) => { e.preventDefault(); ptt.setPointerCapture(e.pointerId); talk(true); });
+["pointerup", "pointercancel", "lostpointercapture"].forEach((ev) => ptt.addEventListener(ev, () => talk(false)));
+ptt.addEventListener("contextmenu", (e) => e.preventDefault());
+document.addEventListener("keydown", (e) => { if (e.code === "Space" && !e.repeat && ctx && document.activeElement.tagName !== "INPUT") { e.preventDefault(); talk(true); } });
+document.addEventListener("keyup", (e) => { if (e.code === "Space" && ctx) talk(false); });
+</script>
+</body>
+</html>

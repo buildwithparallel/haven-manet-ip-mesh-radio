@@ -1,0 +1,15 @@
+#!/bin/sh /etc/rc.common
+# Haven Console: https://<gate>:8443 (Field, Mesh, Talk). Runs on the gate only.
+
+START=95
+STOP=10
+USE_PROCD=1
+
+start_service() {
+	procd_open_instance
+	procd_set_param command /usr/bin/haven-console -addr :8443 -dir /etc/haven-console
+	procd_set_param respawn
+	procd_set_param stdout 1
+	procd_set_param stderr 1
+	procd_close_instance
+}
