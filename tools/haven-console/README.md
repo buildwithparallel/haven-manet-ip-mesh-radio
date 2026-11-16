@@ -12,12 +12,12 @@ Use your gate's mesh address if it is not `10.41.0.1`. Accept the certificate wa
 
 A bar at the top, on every tab, shows the Wi-Fi network this phone joined with band, channel and signal, the HaLow frequency and channel width, and whether the route to the gate is direct or relayed.
 
-The page opens on the Mesh tab and has four tabs.
+The page opens on the Mesh tab (or the last tab you used) and has four tabs. A link can open a tab directly, for example `https://10.41.0.1:8443/#route`. On a phone it's one column; on a laptop or desktop it uses the width, with the Route diagram beside its path list and event log.
 
 | Tab | What it shows |
 |---|---|
 | **Mesh** | Every node with its HaLow neighbors (signal, send and receive rates, link state) and its live route to the gate, from its own routing table. |
-| **Route** | Made for demos and filming. Pick a node and see how its traffic reaches the gate as a large diagram: the node on the left, the gate on the right, relays across the top, and traffic flowing along the path in use. Backup paths are drawn faintly. A banner says DIRECT, RELAYED, LINK LOST (with a running timer) or NO ROUTE, and after a switch it shows how many seconds the reroute took. Read from the gate's own batman-adv table every second. **Present full screen** hides everything else. |
+| **Route** | Made for demos and filming. Pick a node and see how its traffic reaches the gate as a large diagram: the node on the left, the gate on the right, and traffic flowing along the path in use. With two middle nodes it draws a diamond, one above and one below, and they keep their places, so a reroute moves the line across the diamond instead of moving the nodes. Backup paths are drawn faintly. A banner says DIRECT, RELAYED, LINK LOST (with a running timer) or NO ROUTE, and after a switch it shows how many seconds the reroute took. Read from the gate's own batman-adv table every second. **Present full screen** hides everything else. |
 | **Performance** | The node this phone is on, the phone's Wi-Fi signal there, the route from that node to the gate (Direct or Relayed through another node), the HaLow signal toward the gate, a speed test to the gate, and internet pings from the gate. |
 | **Talk** | Push-to-talk between phones over WebRTC, and a count track the gate can play into the channel. |
 
@@ -78,6 +78,7 @@ The console needs a Raspberry Pi gate (aarch64). The agent runs on any node with
 - **A node without the agent** still appears in the Mesh tab as a neighbor (by name if alfred knows it, otherwise by MAC), but its own links and the route through it are not shown. If you add the agent to a node later, it can take up to 10 minutes to appear. To show it right away, run `/etc/init.d/haven-console restart` on the gate.
 - **Names.** Nodes are named by their agents. The console saves every name it learns to `/etc/haven-console/names`, so a node that goes silent keeps its name. You can also name nodes by hand in `/etc/haven-names` (`<HaLow MAC> <name>` per line).
 - **The Mesh tab refreshes every 3 seconds,** so a fast reroute can land between readings. The Route tab reads the gate every second.
+- **Reroute speed is set by the mesh, not the page.** With the default mesh settings a silent node took about 20 seconds to be routed around. Setting `mesh_plink_timeout` to 5 seconds on every node (`iw dev <mesh interface> set mesh_param mesh_plink_timeout 5`) brought it down to a few seconds in testing, with the count track playing through. 3 seconds made healthy links drop on their own.
 
 ## Files
 
