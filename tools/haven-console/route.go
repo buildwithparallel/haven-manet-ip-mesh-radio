@@ -47,6 +47,7 @@ type router struct {
 	seen        map[string]bool
 	silentSince map[string]time.Time
 	events      []routeEvent
+	tickedAt    time.Time
 }
 
 func newRouter(col *collector) *router {
@@ -86,10 +87,36 @@ func (r *router) trace(dest string) []string {
 	return path
 }
 
+// run checks routes every second while someone is looking (see
+// activity.go), and does nothing otherwise. After an idle spell it starts
+// over, so a change that happened while nobody watched isn't logged as a
+// reroute with a made-up time.
 func (r *router) run() {
 	for {
+		if watchers.wait() {
+			r.mu.Lock()
+			r.origs, r.last = map[string][]origEntry{}, map[string]time.Duration{}
+			r.paths, r.seen, r.silentSince = map[string][]string{}, map[string]bool{}, map[string]time.Time{}
+			r.mu.Unlock()
+		}
 		r.tick()
+		r.mu.Lock()
+		r.tickedAt = time.Now()
+		r.mu.Unlock()
 		time.Sleep(time.Second)
+	}
+}
+
+// waitTick waits (up to max) for a route check newer than one second, so the
+// first answer after an idle spell has real routes in it.
+func (r *router) waitTick(max time.Duration) {
+	for end := time.Now().Add(max); time.Now().Before(end); time.Sleep(100 * time.Millisecond) {
+		r.mu.Lock()
+		ok := time.Since(r.tickedAt) < time.Second
+		r.mu.Unlock()
+		if ok {
+			return
+		}
 	}
 }
 
@@ -208,6 +235,11 @@ func (r *router) names(v *view, path []string) []string {
 }
 
 func (r *router) handler(w http.ResponseWriter, req *http.Request) {
+	if req.URL.Query().Get("live") != "" {
+		watchers.touch()
+		r.waitTick(3 * time.Second)
+	}
+	r.col.fresh(10 * time.Second)
 	v := r.col.view()
 	r.mu.Lock()
 	defer r.mu.Unlock()

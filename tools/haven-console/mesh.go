@@ -129,6 +129,9 @@ type collector struct {
 	lastOK   map[string]time.Time
 	notNode  map[string]time.Time
 	selfIP   string
+
+	refreshMu   sync.Mutex
+	refreshedAt time.Time
 }
 
 func newCollector(localAgent string, extra []string) *collector {
@@ -244,14 +247,30 @@ func (c *collector) refresh() {
 	}
 }
 
+// run reads every node every 3 seconds while someone is looking (see
+// activity.go), and does nothing otherwise.
 func (c *collector) run() {
 	for {
+		watchers.wait()
 		start := time.Now()
-		c.refresh()
+		c.fresh(0)
 		if d := 3*time.Second - time.Since(start); d > 0 {
 			time.Sleep(d)
 		}
 	}
+}
+
+// fresh makes sure the readings are at most maxAge old, reading every node
+// now if they aren't. Handlers use it so the first answer after an idle spell
+// isn't out of date.
+func (c *collector) fresh(maxAge time.Duration) {
+	c.refreshMu.Lock()
+	defer c.refreshMu.Unlock()
+	if maxAge > 0 && time.Since(c.refreshedAt) <= maxAge {
+		return
+	}
+	c.refresh()
+	c.refreshedAt = time.Now()
 }
 
 func (c *collector) snapshot() []*nodeReading {
@@ -365,6 +384,10 @@ func clientIP(r *http.Request) string {
 }
 
 func (c *collector) fieldHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Query().Get("live") != "" { // a live view keeps the mesh polling; a one-off look doesn't
+		watchers.touch()
+	}
+	c.fresh(10 * time.Second)
 	v := c.view()
 	ip := clientIP(r)
 	mac := ""
@@ -442,6 +465,10 @@ func (c *collector) fieldHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *collector) meshHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Query().Get("live") != "" {
+		watchers.touch()
+	}
+	c.fresh(10 * time.Second)
 	v := c.view()
 	type link struct {
 		N  string   `json:"n"`

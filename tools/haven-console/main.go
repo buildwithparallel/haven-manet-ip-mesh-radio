@@ -4,9 +4,12 @@
 //	       internet pings and a speed test
 //	Mesh   every node, its HaLow links, and the live route from the gate
 //	Talk   push-to-talk between phones, and a count track from the gate
+//	ADS-B  live aircraft and the offline SkyAware map, from a node running dump1090
+//	SDR    a live waterfall from any node with an RTL-SDR plugged in
 //
-// Every node runs the small agent in agent/haven-node.uc. This program runs
-// on the gate only.
+// Every node runs the small agent in agent/haven-node.uc, and a node with an
+// RTL-SDR also runs the SDR agent in sdr-agent/. This program runs on the
+// gate only.
 package main
 
 import (
@@ -134,6 +137,12 @@ func main() {
 	mux.HandleFunc("/api/speed/down", speedDown)
 	mux.HandleFunc("/api/speed/up", speedUp)
 	mux.HandleFunc("/api/count", count.handler)
+	sdr := newSDRFinder(col)
+	mux.HandleFunc("/api/sdr", sdr.handler)
+	mux.HandleFunc("/sdr-node/", sdr.proxy)
+	adsb := newADSBFinder(col)
+	mux.HandleFunc("/api/adsb", adsb.handler)
+	mux.HandleFunc("/adsb-node/", adsb.proxy)
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-cache")
 		files.ServeHTTP(w, r)

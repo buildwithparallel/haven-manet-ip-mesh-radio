@@ -14,10 +14,44 @@
   body { max-width: 600px; margin: 0 auto; padding: 14px 16px 48px; }
   header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
   header img { width: 30px; height: 30px; }
-  header h1 { font-size: 20px; margin: 0; }
-  nav { display: flex; gap: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 4px; }
-  nav button { flex: 1; background: transparent; color: var(--muted); border: 0; border-radius: 9px; padding: 10px; font: inherit; font-weight: 600; cursor: pointer; }
+  header h1 { font-size: 20px; margin: 0; line-height: 1.15; }
+  header .tagline { color: var(--muted); font-size: 13px; }
+  header .helpbtn { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 14px; font-weight: 600; color: var(--text);
+    background: var(--surface); border: 1px solid var(--line); border-radius: 99px; padding: 6px 12px 6px 8px; cursor: pointer; }
+  header .helpbtn svg { width: 20px; height: 20px; color: var(--blue); }
+  nav { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 4px; }
+  nav button { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; background: transparent; color: var(--muted); border: 0; border-radius: 9px;
+    padding: 7px 2px 6px; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  nav button svg { width: 22px; height: 22px; flex: none; }
   nav button.active { background: var(--blue); color: #fff; }
+  /* every tab starts the same way: title, one line on what it shows, how to use it */
+  .intro { margin: 2px 0 14px; }
+  .intro h2 { font-size: 22px; margin: 0 0 2px; }
+  .intro .lede { margin: 0 0 8px; color: var(--muted); }
+  details.how { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 0 14px; }
+  details.how summary { cursor: pointer; padding: 10px 0; font-weight: 600; font-size: 14px; color: var(--text); list-style: none; display: flex; align-items: center; gap: 8px; }
+  details.how summary::-webkit-details-marker { display: none; }
+  details.how summary::before { content: ""; width: 7px; height: 7px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(-45deg); transition: transform .15s; margin: 0 3px 0 1px; }
+  details.how[open] summary::before { transform: rotate(45deg); }
+  details.how ol { margin: 0 0 10px; padding-left: 22px; font-size: 14px; }
+  details.how li { margin: 0 0 6px; }
+  details.how .note { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
+  h3.part { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 18px 0 8px; font-weight: 600; }
+  /* welcome guide */
+  dialog#guide { background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 16px; padding: 0; width: min(680px, calc(100vw - 24px)); max-height: calc(100vh - 32px); }
+  dialog#guide::backdrop { background: rgba(0,0,0,.7); }
+  .gwrap { padding: 20px 20px 16px; }
+  .gwrap h2 { margin: 0 0 4px; font-size: 24px; }
+  .gwrap .lede { color: var(--muted); margin: 0 0 14px; }
+  .gtools { list-style: none; padding: 0; margin: 0 0 16px; display: grid; gap: 8px; }
+  .gtools button { width: 100%; text-align: left; display: grid; grid-template-columns: 36px 1fr; gap: 2px 12px; align-items: start; font: inherit; color: var(--text);
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px; cursor: pointer; }
+  .gtools button:hover { border-color: var(--blue); }
+  .gtools svg { width: 26px; height: 26px; color: var(--blue); grid-row: 1 / 3; margin-top: 2px; }
+  .gtools b { font-size: 16px; }
+  .gtools span { color: var(--muted); font-size: 14px; }
+  .gwords { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 14px; margin: 0 0 16px; }
+  .gwords dt { font-weight: 700; } .gwords dd { margin: 0; color: var(--muted); }
   section { display: none; } section.active { display: block; }
   .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin-bottom: 12px; }
   .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
@@ -45,6 +79,7 @@
   .node-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
   .node-name { font-size: 18px; font-weight: 700; }
   .tag { font-size: 12px; color: var(--muted); }
+  select { font: inherit; border-radius: 10px; border: 1px solid var(--line); background: #0c0c12; color: var(--text); }
   input { width: 100%; padding: 12px; font-size: 17px; border-radius: 10px; border: 1px solid var(--line); background: #0c0c12; color: var(--text); margin-bottom: 10px; }
   #ptt { display: block; width: 200px; height: 200px; margin: 6px auto 6px; border-radius: 50%; font: inherit; font-size: 20px; font-weight: 600;
     background: #1c1c26; border: 3px solid var(--blue); color: var(--text); touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
@@ -92,39 +127,120 @@
     body { max-width: 1280px; padding: 20px 32px 48px; }
     .top { display: flex; align-items: center; gap: 16px; padding-top: 10px; }
     .top .bar { flex: 1 1 auto; margin-bottom: 0; }
-    .top nav { flex: 0 0 460px; }
+    .top nav { flex: 0 0 auto; }
+    nav button { flex-direction: row; gap: 7px; font-size: 15px; padding: 9px 14px; }
+    nav button svg { width: 19px; height: 19px; }
+    .intro { max-width: 860px; }
     #meshNodes { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 12px; align-items: start; }
     #meshNodes > .card { margin-bottom: 0; }
     #meshNodes > :not(.card) { grid-column: 1 / -1; }
-    #route.active { display: grid; grid-template-columns: minmax(0, 1fr) 360px; grid-template-rows: auto auto auto auto 1fr; gap: 0 16px; align-items: start; }
-    #route > .rpick { grid-column: 1 / -1; }
-    #route > .rmain { grid-column: 1; grid-row: 2 / -1; }
+    #route.active { display: grid; grid-template-columns: minmax(0, 1fr) 360px; grid-template-rows: auto auto auto auto auto 1fr; gap: 0 16px; align-items: start; }
+    #route > .intro, #route > .rpick { grid-column: 1 / -1; }
+    #route > .rmain { grid-column: 1; grid-row: 3 / -1; }
     #route > .card:not(.rmain), #route > #rPresentBtn { grid-column: 2; }
     #rSvg { max-height: calc(100vh - 300px); }
     body.present #rSvg { max-height: calc(100vh - 160px); }
     #field.active { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; align-items: start; }
-    #field > .small { grid-column: 1 / -1; }
+    #field > .small, #field > .intro { grid-column: 1 / -1; }
     #talk { max-width: 640px; margin: 0 auto; }
+  }
+  /* SDR tab */
+  #sdrNote { margin-bottom: 8px; }
+  #sdr [hidden] { display: none !important; }
+  #sGain { width: 5.5em !important; }
+  .sbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .sseg { display: inline-flex; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 3px; }
+  .sseg button { font: inherit; font-weight: 600; border: 0; border-radius: 8px; padding: 7px 14px; background: transparent; color: var(--muted); cursor: pointer; }
+  .sseg button.on { background: var(--blue); color: #fff; }
+  .sbar label { color: var(--muted); font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+  .sbar input, .sbar select { width: auto; margin: 0; font-size: 15px; padding: 6px 8px; }
+  .sbar input[type=number] { width: 7.5em; }
+  .sbar button.action { width: auto; padding: 8px 16px; }
+  #sSpec { display: block; width: 100%; height: 110px; border-bottom: 1px solid var(--line); }
+  #sWf { display: block; width: 100%; height: 420px; image-rendering: pixelated; touch-action: none; cursor: crosshair; }
+  .saxis { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  #sStatus { color: var(--muted); font-size: 13px; margin: 6px 0 8px; min-height: 1.3em; }
+  #sStatus.err { color: var(--bad); }
+  #sMeasure { font-variant-numeric: tabular-nums; margin-top: 8px; min-height: 1.4em; }
+  #sMeasure strong { color: var(--warn); }
+  .sref { margin-top: 12px; max-width: 520px; }
+  #sIdResult { margin-top: 12px; }
+  .idrow { padding: 10px 0; border-top: 1px solid var(--line); }
+  .idrow:first-of-type { border-top: 0; }
+  .idname { font-size: 18px; font-weight: 700; }
+  .idname .tag { margin-left: 6px; }
+  .idmatch { margin-top: 4px; font-size: 14px; }
+  .idmatch b { color: var(--warn); }
+  .idhead { font-size: 26px; font-weight: 800; margin: 6px 0 12px; }
+  .idhead.ok { color: var(--ok); }
+  .idtiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
+  @media (min-width: 760px) { .idtiles { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .idtile { background: #0c0c12; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+  .idval { font-size: 28px; font-weight: 800; line-height: 1.15; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .idsay { margin: 0 0 8px; font-size: 15px; }
+  .idmore { margin-top: 10px; }
+  .idmore summary { cursor: pointer; color: var(--muted); font-weight: 600; font-size: 14px; padding: 6px 0; }
+  .idtable { overflow-x: auto; }
+  .idtable table { min-width: 560px; }
+  .idtable th { white-space: nowrap; }
+  .idtable td { vertical-align: top; }
+  .idtable td:not(:last-child) { white-space: nowrap; }
+  .idtable tr.lora td:nth-child(-n+4) { color: var(--ok); font-weight: 600; }
+  /* Start / Stop bar: a tab shows live data only after Start */
+  .live { display: flex; align-items: center; gap: 12px; margin: 0 0 12px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+  .live button.action { width: auto; flex: none; padding: 9px 22px; }
+  .live.on button.action { background: #1c1c26; color: var(--text); border: 1px solid var(--line); }
+  .livetext { color: var(--muted); font-size: 14px; }
+  .live.on .livetext { color: var(--ok); }
+  /* ADS-B tab */
+  #adsb [hidden] { display: none !important; }
+  #aUI:not(.islive) .agrid, #aUI:not(.islive) .astat { display: none; }
+  .astat { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 10px; }
+  #aFrame { display: block; width: 100%; height: 520px; border: 0; border-radius: 12px; background: #0c0c12; }
+  #aList td, #aList th { white-space: nowrap; }
+  #aList tr[data-hex] { cursor: pointer; }
+  #aList tr[data-hex]:hover td { background: #16161f; }
+  .agrid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  @media (min-width: 960px) {
+    .agrid { grid-template-columns: minmax(0, 1fr) 400px; align-items: start; }
+    #aFrame { height: calc(100vh - 260px); min-height: 520px; }
+    #aListCard { max-height: calc(100vh - 260px); min-height: 520px; overflow: auto; }
   }
 </style>
 </head>
 <body>
 <header>
   <img src="parallel-mark.svg" alt="Parallel">
-  <h1>Parallel Toolchain</h1>
+  <div>
+    <h1>Parallel Toolchain</h1>
+    <div class="tagline">Live tools for your Haven mesh</div>
+  </div>
+  <button class="helpbtn" id="helpBtn" aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M9.6 9.3a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.6"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></svg>Help</button>
 </header>
 <div class="top">
   <div class="bar" id="bar"><span class="chip"><span class="ic"></span><span class="sub">Finding your node…</span></span></div>
   <nav>
-    <button data-tab="mesh" class="active">Mesh</button>
-    <button data-tab="route">Route</button>
-    <button data-tab="field">Performance</button>
-    <button data-tab="talk">Talk</button>
+    <button data-tab="mesh" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="6" r="2.3"/><circle cx="19" cy="6" r="2.3"/><circle cx="12" cy="18.5" r="2.3"/><path d="M7.3 6h9.4M6.2 8l4.6 8.4M17.8 8l-4.6 8.4"/></svg>Mesh</button>
+    <button data-tab="route"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="5" cy="19" r="2.2"/><circle cx="19" cy="5" r="2.2"/><path d="M7.2 19H15a3.5 3.5 0 0 0 0-7H9a3.5 3.5 0 0 1 0-7h7.8"/></svg>Route</button>
+    <button data-tab="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18h3"/><path d="M9.5 9.5a3.6 3.6 0 0 1 5 0M8 7.5a6 6 0 0 1 8 0"/></svg>My Link</button>
+    <button data-tab="talk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2.5" width="6" height="12" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3.5"/></svg>Talk</button>
+    <button data-tab="adsb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5c.9 0 1.5.8 1.5 1.8V9l7.5 4.2v2.1l-7.5-2.2v4.6l2.3 1.8v1.7L12 20.3l-3.8.9v-1.7l2.3-1.8v-4.6L3 15.3v-2.1L10.5 9V4.3c0-1 .6-1.8 1.5-1.8z"/></svg>ADS-B</button>
+    <button data-tab="sdr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12h3l2-6 3 13 3-15 3 12 2-4h4"/></svg>SDR</button>
   </nav>
 </div>
 
-<!-- FIELD -->
+<!-- MY LINK (tab id "field") -->
 <section id="field">
+  <div class="intro hide-present">
+    <h2>My Link</h2>
+    <p class="lede">Tune the node you're connected to: its placement, its antenna and its link back to the gate.</p>
+    <details class="how" data-how="field" open>
+      <summary>How to use it</summary>
+      <ol><li>Join the Wi-Fi of the node you want to tune. <b>You are on</b> confirms which node that is.</li><li>Watch <b>HaLow signal</b> while you move the node, raise it, or adjust or swap its antenna. It updates every few seconds; closer to zero is better (−50 dBm strong, −80 dBm weak).</li><li>Check <b>Route to the gate</b>: direct (one hop) is best. If it's relaying through other nodes, a better spot or antenna may get it a direct link.</li><li><b>Internet, from the gate</b> pings public DNS servers (Cloudflare, Google, Quad9) every 5 seconds. Lines coming back means traffic gets across the mesh and out to the internet.</li><li>Stand still and press <b>Run test</b> to measure speed from this node to the gate. Run it before and after a change to compare.</li></ol>
+      <p class="note"><b>Good to know:</b> the speed test stops at the gate, so it measures the mesh, not your internet line. If the pings fail but the speed test works, look at the gate's uplink.</p>
+    </details>
+  </div>
+  <div class="live hide-present" data-live="field" data-idle="Paused. Press Start to watch this node's signal and internet live."><button class="action">Start</button><span class="livetext">Paused. Press Start to watch this node's signal and internet live.</span></div>
   <div class="card">
     <div class="label">You are on</div>
     <div class="big" id="fOn">—</div>
@@ -167,12 +283,31 @@
 
 <!-- MESH -->
 <section id="mesh" class="active">
-  <div class="small" style="margin-bottom:10px">Every node, refreshed every few seconds. Each route runs from that node to the gate. Signal is what that node hears from each neighbor over HaLow.</div>
+  <div class="intro hide-present">
+    <h2>Mesh</h2>
+    <p class="lede">Every node on your mesh, refreshed every few seconds.</p>
+    <details class="how" data-how="mesh" open>
+      <summary>How to use it</summary>
+      <ol><li>Each card is one node: its name, hardware, mesh address and transmit power (TX).</li><li>The route under the name is how that node reaches the gate. <span class="ok">Direct</span> is one HaLow hop; <span style="color:var(--warn)">Relayed</span> goes through other nodes.</li><li>The table lists the neighbors it hears. <b>Signal</b>: −50 dBm is strong, −80 dBm is weak. <b>Sends</b> and <b>Receives</b> are the HaLow link speed each way.</li></ol>
+      <p class="note"><b>Good to know:</b> a node that's missing is off, out of range, or doesn't have the Toolchain's node agent installed.</p>
+    </details>
+  </div>
+  <div class="live hide-present" data-live="mesh" data-idle="Paused: nothing is checking the nodes. Press Start to see them live."><button class="action">Start</button><span class="livetext">Paused: nothing is checking the nodes. Press Start to see them live.</span></div>
   <div id="meshNodes"></div>
 </section>
 
 <!-- ROUTE -->
 <section id="route">
+  <div class="intro hide-present">
+    <h2>Route</h2>
+    <p class="lede">See what the mesh routing, batman-adv (B.A.T.M.A.N. V), is doing: the path it picked from a node to the gate, and how it changes. Use it to debug routes and to show self-healing.</p>
+    <details class="how" data-how="route" open>
+      <summary>How to use it</summary>
+      <ol><li>Pick a node to watch. The bright, moving line is the path batman-adv is using right now; dashed lines are backup paths it knows about.</li><li><b>Paths the gate knows</b> lists every path with its estimated speed. batman-adv uses the fastest, so this shows why it picked the path it did.</li><li>Cover a relay node's antenna or switch it off. The line turns red, then jumps to a backup path, and <b>Rerouted in</b> shows how long that took.</li><li><b>What happened</b> logs every change, to catch a route that keeps flapping or a node that drops out.</li><li><b>Present full screen</b> shows just the diagram, for a laptop or TV.</li></ol>
+      <p class="note"><b>Good to know:</b> batman-adv checks every path about once a second, from small messages each node sends. A slow reroute usually means the dropped link took a few seconds to be noticed as gone.</p>
+    </details>
+  </div>
+  <div class="live hide-present" data-live="route" data-idle="Paused: nothing is tracing routes. Press Start to watch them live."><button class="action">Start</button><span class="livetext">Paused: nothing is tracing routes. Press Start to watch them live.</span></div>
   <div class="rpick hide-present" id="rPick"></div>
   <div class="card rmain">
     <div class="rbanner"><span class="rpill" id="rPill">…</span><span class="rtext" id="rText"></span></div>
@@ -194,6 +329,15 @@
 
 <!-- TALK -->
 <section id="talk">
+  <div class="intro hide-present">
+    <h2>Talk</h2>
+    <p class="lede">Push-to-talk voice between phones on the mesh. No internet or cell service needed.</p>
+    <details class="how" data-how="talk" open>
+      <summary>How to use it</summary>
+      <ol><li>Enter your name and press <b>Join</b>. Allow the microphone to talk, or decline it to only listen.</li><li>Hold the big button, or the space bar on a laptop, while you speak.</li><li>Everyone who has joined hears you, whichever node's Wi-Fi they're on.</li></ol>
+      <p class="note"><b>Good to know:</b> the count track at the bottom is a test: the gate plays someone counting, so a skip in the count shows the moment the mesh rerouted.</p>
+    </details>
+  </div>
   <div class="card" id="tJoin">
     <div class="label">Your name</div>
     <input id="tName" maxlength="32" autocomplete="off" placeholder="e.g. Tim">
@@ -205,9 +349,10 @@
     <div class="small" style="text-align:center" id="tPttHint">Hold the button, or the space bar, while you speak.</div>
     <button class="action secondary hidden" id="tUnmute" style="margin-top:10px">Tap to hear audio</button>
   </div>
+  <h3 class="part">Testing</h3>
   <div class="card">
     <div class="label">Count track</div>
-    <div class="small" style="margin-bottom:8px">The gate joins the channel and plays a counting recording. Listen from another node's Wi-Fi and the count crosses HaLow, so a reroute shows up as a skip.</div>
+    <div class="small" style="margin-bottom:8px">The gate joins the channel and plays a recording of someone counting. Listen from another node's Wi-Fi: the count crosses HaLow, so a reroute shows up as a skip.</div>
     <button class="action secondary" id="tCount">Play count from the gate</button>
   </div>
   <div class="card hidden" id="tPeersCard">
@@ -216,6 +361,109 @@
   </div>
   <div class="small" id="tStatus"></div>
 </section>
+
+<!-- ADS-B -->
+<section id="adsb">
+  <div class="intro hide-present">
+    <h2>ADS-B</h2>
+    <p class="lede">Live aircraft overhead, picked up by a node with an RTL-SDR, on a map that works with no internet.</p>
+    <details class="how" data-how="adsb" open>
+      <summary>How to use it</summary>
+      <ol><li>Aircraft broadcast their position, altitude and speed on 1090 MHz (ADS-B). The node decodes them and puts them on the map, with the trail each one has flown.</li><li>The list shows every aircraft heard in the last minute, the most recent first. Tap one to find it on the map.</li><li>Tap an aircraft on the map for its details. The map is built in, so it works with no internet.</li><li>The same aircraft go to ATAK on the mesh as map markers (CoT), so a team sees them next to each other.</li></ol>
+      <p class="note"><b>Good to know:</b> ADS-B and the SDR tab share the node's RTL-SDR. While anyone has the SDR tab open, ADS-B pauses and this map stops updating; it comes back 30 seconds after they leave. Range depends on the antenna: a 1090 MHz antenna up high hears aircraft over 100 miles away.</p>
+    </details>
+  </div>
+  <div class="rpick" id="aPick"></div>
+  <div class="small" id="aNote">Looking for nodes running ADS-B…</div>
+  <div id="aUI" hidden>
+    <div class="live hide-present" data-live="adsb" data-idle="Paused. Press Start to show live aircraft."><button class="action">Start</button><span class="livetext">Paused. Press Start to show live aircraft.</span></div>
+    <div class="astat" id="aStat"></div>
+    <div class="agrid">
+      <iframe id="aFrame" title="ADS-B map"></iframe>
+      <div class="card" id="aListCard">
+        <div class="label">Aircraft heard</div>
+        <table id="aList"></table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SDR -->
+<section id="sdr">
+  <div class="intro hide-present">
+    <h2>SDR</h2>
+    <p class="lede">Signals intelligence (SIGINT) from a node with an RTL-SDR plugged in: find active networks in the area and work out what they are.</p>
+    <details class="how" data-how="sdr" open>
+      <summary>How to use it</summary>
+      <ol><li><b>Scan band</b>: pick a band and press <b>Start</b>. A signal that keeps coming back at one frequency is an active network. The orange line holds the strongest signal seen.</li><li><b>Tap a signal</b> to zoom in on it. <b>Zoom in</b> shows about 2 MHz live, fast enough to see LoRa chirps: the diagonal lines inside a burst.</li><li>Press <b>Identify</b> and make the radio transmit (for Reticulum, send an announce). The node listens for 6 seconds and tests every burst it hears: LoRa, with its bandwidth, spreading factor (SF), and coding rate; FSK; wideband signals like Wi-Fi HaLow; or a steady carrier. It also says when the settings match Meshtastic or LoRaWAN.</li><li>Use what it found to set up a radio and try to talk to it. To measure by hand instead, press <b>Freeze</b> and drag a box across one chirp: its width is the bandwidth and its length gives the SF.</li></ol>
+      <p class="note"><b>Good to know:</b> this only listens; it never transmits. While the SDR is in use, the node pauses ADS-B, and restarts it 30 seconds after you leave this tab. A strong transmitter next to the SDR, like the node's own HaLow radio, can swamp it: lower the gain or move the antennas apart.</p>
+    </details>
+  </div>
+  <div class="rpick" id="sdrPick"></div>
+  <div class="small" id="sdrNote">Looking for nodes with an SDR…</div>
+  <div id="sdrUI" hidden>
+    <div class="sbar">
+      <div class="sseg"><button data-smode="sweep" class="on">Scan band</button><button data-smode="zoom">Zoom in</button></div>
+      <label id="sLBand">Band <select id="sBand">
+        <option value="902,928" selected>US 902–928 MHz</option>
+        <option value="863,870">EU 863–870 MHz</option>
+        <option value="430,440">433 MHz band</option>
+        <option value="">Custom</option>
+      </select></label>
+      <label id="sLStart">From <input id="sStart" type="number" step="0.1" value="902"> MHz</label>
+      <label id="sLStop">to <input id="sStop" type="number" step="0.1" value="928"> MHz</label>
+      <label id="sLCenter" hidden>Center <input id="sCenter" type="number" step="0.001" value="923.000"> MHz</label>
+      <label id="sLRow" hidden>Row <select id="sMs"><option>2</option><option selected>5</option><option>10</option><option>20</option></select> ms</label>
+      <label title="Receiver gain, 0 to 50 dB. Lower it when a strong signal nearby swamps the display; raise it to hear weak signals. The tuner uses its nearest supported step.">Gain <input id="sGain" type="number" min="0" max="50" step="0.1" value="0" inputmode="decimal"> dB</label>
+      <label title="The radio picks its own gain and keeps changing it."><input id="sAuto" type="checkbox" style="width:auto;margin:0"> Auto gain</label>
+      <button class="action" id="sGo">Start</button>
+      <button class="action secondary" id="sFreeze" hidden>Freeze</button>
+      <button class="action" id="sIdent">Identify</button>
+    </div>
+    <div class="small" style="margin:-2px 0 6px"><b>Gain</b> is how much the receiver amplifies. Use 0–10 dB when a transmitter close by swamps the view, and 30–40 dB to pick up distant signals. <b>Auto gain</b> lets the radio choose and keep changing it, so levels jump around and signals are hard to compare; a fixed number is better for hunting.</div>
+    <div id="sStatus">Press Start to scan the band.</div>
+    <div class="card">
+      <canvas id="sSpec"></canvas>
+      <canvas id="sWf"></canvas>
+      <div class="saxis"><span id="sAx0"></span><span id="sAx1"></span><span id="sAx2"></span></div>
+    </div>
+    <div id="sMeasure"></div>
+    <div class="card" id="sIdResult" hidden></div>
+    <h3 class="part">Reference</h3>
+    <div class="card sref">
+      <div class="label">LoRa chirp length by spreading factor and bandwidth</div>
+      <table><tr><th>SF</th><th>125 kHz</th><th>250 kHz</th><th>500 kHz</th></tr><tbody id="sSfTable"></tbody></table>
+    </div>
+  </div>
+</section>
+
+
+<!-- WELCOME GUIDE: shown on the first visit, and from Help -->
+<dialog id="guide" aria-labelledby="gTitle">
+  <div class="gwrap">
+    <h2 id="gTitle">Parallel Toolchain</h2>
+    <p class="lede">Live tools for your Haven mesh. Your gate node serves this page, so it works with no internet. Open it from any phone or laptop on a Haven node's Wi-Fi. Each tool stays idle until you press Start, so nothing uses the mesh when nobody's looking.</p>
+    <div class="label">The tools</div>
+    <ul class="gtools">
+      <li><button data-go="mesh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="6" r="2.3"/><circle cx="19" cy="6" r="2.3"/><circle cx="12" cy="18.5" r="2.3"/><path d="M7.3 6h9.4M6.2 8l4.6 8.4M17.8 8l-4.6 8.4"/></svg><b>Mesh</b><span>Every node at a glance: whether it's up, how it reaches the gate, and how well it hears its neighbors. Use it after you set up or move a node.</span></button></li>
+      <li><button data-go="route"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="5" cy="19" r="2.2"/><circle cx="19" cy="5" r="2.2"/><path d="M7.2 19H15a3.5 3.5 0 0 0 0-7H9a3.5 3.5 0 0 1 0-7h7.8"/></svg><b>Route</b><span>See what the mesh routing (batman-adv, B.A.T.M.A.N. V) is doing: the path it picked, the backups it holds, and how fast it reroutes when a link drops. Use it to debug a route or show self-healing.</span></button></li>
+      <li><button data-go="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18h3"/><path d="M9.5 9.5a3.6 3.6 0 0 1 5 0M8 7.5a6 6 0 0 1 8 0"/></svg><b>My Link</b><span>Tune the node you're connected to: watch its HaLow signal while you move it or adjust its antenna, check it reaches public DNS servers, and run a speed test to the gate.</span></button></li>
+      <li><button data-go="talk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2.5" width="6" height="12" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3.5"/></svg><b>Talk</b><span>Push-to-talk voice between phones on the mesh, with no internet or cell service.</span></button></li>
+      <li><button data-go="adsb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5c.9 0 1.5.8 1.5 1.8V9l7.5 4.2v2.1l-7.5-2.2v4.6l2.3 1.8v1.7L12 20.3l-3.8.9v-1.7l2.3-1.8v-4.6L3 15.3v-2.1L10.5 9V4.3c0-1 .6-1.8 1.5-1.8z"/></svg><b>ADS-B</b><span>Live aircraft overhead, picked up by a node with an RTL-SDR, on a map that works with no internet. The same aircraft go to ATAK on the mesh.</span></button></li>
+      <li><button data-go="sdr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12h3l2-6 3 13 3-15 3 12 2-4h4"/></svg><b>SDR</b><span>Signals intelligence (SIGINT) from a node with an RTL-SDR plugged in: scan the spectrum for active LoRa and other networks, then read their settings to work out what they are.</span></button></li>
+    </ul>
+    <div class="label">Words to know</div>
+    <dl class="gwords">
+      <dt>Gate</dt><dd>The node with the internet uplink. This page runs on it.</dd>
+      <dt>Point</dt><dd>Any other node. Points pass traffic to each other and to the gate.</dd>
+      <dt>HaLow</dt><dd>The long-range Wi-Fi, around 900 MHz, that nodes use to reach each other.</dd>
+      <dt>Hop</dt><dd>One HaLow link. Direct means one hop to the gate; relayed means through other nodes.</dd>
+      <dt>dBm</dt><dd>Signal strength. Closer to zero is stronger: −50 is strong, −80 is weak, below −90 drops out.</dd>
+      <dt>Mb/s</dt><dd>Speed, in megabits per second.</dd>
+    </dl>
+    <button class="action" id="guideClose">Got it</button>
+  </div>
+</dialog>
 
 <script>
 "use strict";
@@ -242,14 +490,41 @@ document.querySelectorAll("nav button").forEach((b) => b.addEventListener("click
   document.querySelectorAll("nav button").forEach((x) => x.classList.toggle("active", x === b));
   document.querySelectorAll("section").forEach((s) => s.classList.toggle("active", s.id === tab));
   try { localStorage.setItem("parallel-toolchain-tab", tab); } catch (_) {}
-  if (tab === "mesh") refreshMesh();
-  if (tab === "route") setTimeout(refreshRoute, 0);   // after the route code below has loaded
+  stopLive();
   if (tab !== "route" && document.body.classList.contains("present")) setPresent(false);
+  setTimeout(() => (tab === "sdr" ? openSDR() : closeSDR()), 0);
+  if (tab === "adsb") setTimeout(() => openADSB(), 0);   // finds the node; Start shows aircraft
 }));
+// "How to use it" on each tab: open until you close it, then stays closed.
+document.querySelectorAll("details.how").forEach((d) => {
+  const key = "parallel-toolchain-how-" + d.dataset.how;
+  try { if (localStorage.getItem(key) === "closed") d.open = false; } catch (_) {}
+  d.addEventListener("toggle", () => { try { localStorage.setItem(key, d.open ? "open" : "closed"); } catch (_) {} });
+});
+
+// Welcome guide: on the first visit, and from Help.
+function openGuide() { const g = $("#guide"); if (!g.open) g.showModal(); }
+$("#helpBtn").addEventListener("click", openGuide);
+$("#guideClose").addEventListener("click", () => $("#guide").close());
+$("#guide").addEventListener("click", (e) => {
+  if (e.target === e.currentTarget) { $("#guide").close(); return; } // tap outside
+  const b = e.target.closest("button[data-go]");
+  if (!b) return;
+  $("#guide").close();
+  document.querySelector(`nav button[data-tab="${b.dataset.go}"]`)?.click();
+});
+try {
+  if (!localStorage.getItem("parallel-toolchain-welcomed")) {
+    localStorage.setItem("parallel-toolchain-welcomed", "1");
+    if (!location.hash) openGuide();
+  }
+} catch (_) {}
+
 // A link can open a tab directly (…:8443/#route); otherwise reopen the last one.
 try {
   const want = location.hash.slice(1) || localStorage.getItem("parallel-toolchain-tab");
   if (want) document.querySelector(`nav button[data-tab="${CSS.escape(want)}"]`)?.click();
+  if (location.hash) requestAnimationFrame(() => window.scrollTo(0, 0)); // the #tab link names a section; don't jump past the header
 } catch (_) {}
 
 // Hardware model in words, and icons for the status bar.
@@ -266,8 +541,10 @@ const ICON = {
   route: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="5" cy="19" r="2.2"/><circle cx="19" cy="5" r="2.2"/><path d="M7.2 19H15a3.5 3.5 0 0 0 0-7H9a3.5 3.5 0 0 1 0-7h7.8"/></svg>',
 };
 function band(mhz) { return mhz == null ? "" : mhz < 3000 ? "2.4 GHz" : mhz < 5925 ? "5 GHz" : "6 GHz"; }
+const CHIP_TIP = { wifi: "A Wi-Fi network on the node you're connected to", halow: "The HaLow channel the nodes use to reach each other", route: "How the node you're on reaches the gate" };
 function chip(icon, main, sub, cls) {
-  return '<span class="chip ' + (cls || "") + '"><span class="ic">' + icon + "</span><span>" + main +
+  const tip = icon === ICON.wifi ? CHIP_TIP.wifi : icon === ICON.halow ? CHIP_TIP.halow : icon === ICON.route ? CHIP_TIP.route : "";
+  return '<span class="chip ' + (cls || "") + '"' + (tip ? ' title="' + tip + '"' : "") + '><span class="ic">' + icon + "</span><span>" + main +
     (sub ? ' <span class="sub">' + sub + "</span>" : "") + "</span></span>";
 }
 function renderBar(d) {
@@ -296,7 +573,7 @@ function routeHTML(chain) {
 // ---------- field ----------
 async function refreshField() {
   try {
-    const d = await getJSON("/api/field");
+    const d = await getJSON("/api/field" + (liveTab === "field" ? "?live=1" : ""));
     if (d.on && d.on !== d.gate) myNode = d.on;
     renderBar(d);
     $("#fOn").textContent = d.on || "—";
@@ -498,9 +775,9 @@ function line(a, b, color, w, dash, opacity, cls) {
 
 async function refreshRoute() {
   try {
-    let d = await getJSON("/api/route" + (rTo ? "?to=" + encodeURIComponent(rTo) : ""), 3000);
+    let d = await getJSON("/api/route?live=1" + (rTo ? "&to=" + encodeURIComponent(rTo) : ""), 5000);
     const want = rPickDest(d);
-    if (want && d.to !== want) { rTo = want; d = await getJSON("/api/route?to=" + encodeURIComponent(want), 3000); }
+    if (want && d.to !== want) { rTo = want; d = await getJSON("/api/route?live=1&to=" + encodeURIComponent(want), 5000); }
     rData = d; rAt = Date.now();
     renderRoute();
   } catch (_) {
@@ -522,20 +799,12 @@ function setPresent(on) {
 $("#rPresentBtn").addEventListener("click", () => setPresent(true));
 $("#rPresent").addEventListener("click", () => setPresent(false));
 document.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement) setPresent(false); });
-setInterval(() => { if (tab === "route" && rData && rData.status === "lost") renderRoute(); }, 100);
-(async function routeLoop() {
-  for (;;) {
-    const t = performance.now();
-    if (tab === "route") await refreshRoute();
-    const left = 1000 - (performance.now() - t);
-    if (left > 0) await sleep(left);
-  }
-})();
+setInterval(() => { if (liveTab === "route" && rData && rData.status === "lost") renderRoute(); }, 100);
 
 // ---------- mesh ----------
 async function refreshMesh() {
   try {
-    const d = await getJSON("/api/mesh");
+    const d = await getJSON("/api/mesh?live=1");
     $("#meshNodes").innerHTML = d.nodes.map((n) => {
       let route = "";
       if (n.role === "gate") route = '<span class="status direct">Gate</span>';
@@ -554,29 +823,71 @@ async function refreshMesh() {
         '<span><span class="node-name">' + esc(n.n || n.ip) + '</span><div class="tag">' + esc(shortModel(n.model)) + "</div></span>" +
         '<span class="tag">' + esc(n.ip) + (n.txp != null ? " · " + n.txp + " dBm TX" : "") + "</span></div>" +
         (n.err ? '<span class="status none">' + esc(n.err) + "</span>" : route + links) + "</div>";
-    }).join("") || '<div class="muted">No nodes found yet.</div>';
+    }).join("") || '<div class="muted">No nodes found yet. The gate lists every node it can reach that runs the Toolchain\'s node agent.</div>';
   } catch (_) {
     $("#meshNodes").insertAdjacentHTML("afterbegin", '<div class="small bad">No answer from the gate at ' + new Date().toLocaleTimeString() + ".</div>");
   }
 }
 
-(async function loop() {
-  for (;;) {
-    const t = performance.now();
-    await refreshField();   // also feeds the status bar on every tab
-    if (tab === "mesh") await refreshMesh();
-    const left = 3000 - (performance.now() - t);
-    if (left > 0) await sleep(left);
-  }
-})();
-(async function pings() {
-  for (;;) {
-    const t = performance.now();
-    if (tab === "field") await pingOnce();
-    const left = 5000 - (performance.now() - t);
-    if (left > 0) await sleep(left);
-  }
-})();
+// ---------- live updates ----------
+// Nothing updates on its own. A tab shows live data only after Start, and
+// stops when you leave the tab or the page goes to the background. The gate
+// stops polling the mesh 20 seconds after the last live request.
+var liveTab = null, liveRun = 0;
+const LIVE = {
+  mesh: { jobs: [[3000, refreshMesh]], text: "Live: nodes refresh every 3 seconds." },
+  route: { jobs: [[1000, refreshRoute]], text: "Live: the route updates every second." },
+  field: { jobs: [[3000, refreshField], [5000, pingOnce]], text: "Live: signal every 3 seconds, internet check every 5." },
+  adsb: { start: () => startADSB(), stop: () => stopADSB(), text: "Live: aircraft update every 2 seconds." },
+};
+function setLiveUI() {
+  document.querySelectorAll(".live").forEach((el) => {
+    const on = el.dataset.live === liveTab;
+    el.classList.toggle("on", on);
+    el.querySelector("button").textContent = on ? "Stop" : "Start";
+    el.querySelector(".livetext").textContent = on ? LIVE[el.dataset.live].text : el.dataset.idle;
+  });
+}
+function startLive(name) {
+  stopLive();
+  liveTab = name;
+  const my = ++liveRun, L = LIVE[name];
+  if (L.start) L.start();
+  if (L.jobs) (async () => {
+    const next = L.jobs.map(() => 0);
+    while (liveRun === my) {
+      for (let i = 0; i < L.jobs.length && liveRun === my; i++) {
+        if (performance.now() >= next[i]) { next[i] = performance.now() + L.jobs[i][0]; await L.jobs[i][1](); }
+      }
+      await sleep(150);
+    }
+  })();
+  setLiveUI();
+}
+function stopLive() {
+  if (!liveTab) return;
+  const L = LIVE[liveTab];
+  liveRun++;
+  liveTab = null;
+  if (L.stop) L.stop();
+  setLiveUI();
+}
+document.addEventListener("click", (e) => {
+  const b = e.target.closest(".live button");
+  if (!b) return;
+  const name = b.closest(".live").dataset.live;
+  liveTab === name ? stopLive() : startLive(name);
+});
+// A hidden page (another app in front, phone locked) keeps going for 3
+// minutes, so you can work in another app while it runs; after that it stops.
+var hiddenTimer = null;
+document.addEventListener("visibilitychange", () => {
+  clearTimeout(hiddenTimer);
+  hiddenTimer = null;
+  if (!document.hidden) return;
+  hiddenTimer = setTimeout(() => { stopLive(); if (typeof closeSDR === "function") closeSDR(); }, 3 * 60 * 1000);
+});
+refreshField();   // once, to fill the status bar; Start on My Link keeps it live
 
 // ---------- talk ----------
 const myId = crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now();
@@ -749,6 +1060,598 @@ ptt.addEventListener("pointerdown", (e) => { e.preventDefault(); ptt.setPointerC
 ptt.addEventListener("contextmenu", (e) => e.preventDefault());
 document.addEventListener("keydown", (e) => { if (e.code === "Space" && !e.repeat && ctx && document.activeElement.tagName !== "INPUT") { e.preventDefault(); talk(true); } });
 document.addEventListener("keyup", (e) => { if (e.code === "Space" && ctx) talk(false); });
+
+// ---------- ADS-B ----------
+// Aircraft from a node running dump1090 (port 8080 on that node), passed
+// through the gate: a list drawn here, and the node's offline SkyAware map.
+(function () {
+  let aIP = null, timer = null, last = null, lastChange = 0, msgs = null, rate = null, site = null;
+  try { aIP = localStorage.getItem("parallel-toolchain-adsb"); } catch (_) {}
+
+  window.openADSB = async function (refresh) {
+    try {
+      const d = await getJSON("/api/adsb" + (refresh ? "?refresh=1" : ""), 12000);
+      const nodes = d.nodes || [];
+      if (!nodes.length) {
+        $("#aPick").innerHTML = "";
+        $("#aUI").hidden = true;
+        $("#aNote").innerHTML = 'No node is running ADS-B. Plug an RTL-SDR into a Haven and set up ADS-B on it (see the ADS-B section of the guide). <a href="#" id="aRetry">Check again</a>';
+        $("#aRetry").addEventListener("click", (e) => { e.preventDefault(); openADSB(true); });
+        return;
+      }
+      if (!nodes.some((n) => n.ip === aIP)) aIP = nodes[0].ip;
+      const cur = nodes.find((n) => n.ip === aIP);
+      site = cur.lat != null ? [cur.lat, cur.lon] : null;
+      $("#aPick").innerHTML = nodes.map((n) => '<button data-ip="' + esc(n.ip) + '" class="' + (n.ip === aIP ? "on" : "") + '">' + esc(n.name) + "</button>").join("");
+      $("#aNote").textContent = "ADS-B on " + cur.name + ".";
+      $("#aUI").hidden = false;
+      if (liveTab === "adsb") startADSB();
+    } catch (_) {
+      $("#aNote").textContent = "No answer from the gate about ADS-B nodes.";
+    }
+  };
+  window.startADSB = function () {
+    if (!aIP) return;
+    const src = "/adsb-node/" + aIP + "/?offline";
+    if ($("#aFrame").getAttribute("src") !== src) $("#aFrame").setAttribute("src", src);
+    if (!timer) { poll(); timer = setInterval(poll, 2000); }
+    $("#aUI").classList.add("islive");
+  };
+  window.stopADSB = function () {
+    if (timer) { clearInterval(timer); timer = null; }
+    const f = $("#aFrame");
+    if (f && f.getAttribute("src")) { f.removeAttribute("src"); f.src = "about:blank"; }
+    $("#aStat").innerHTML = "";
+    $("#aUI").classList.remove("islive");
+  };
+
+  $("#aPick").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-ip]");
+    if (!b) return;
+    aIP = b.dataset.ip; last = null; msgs = null;
+    try { localStorage.setItem("parallel-toolchain-adsb", aIP); } catch (_) {}
+    stopADSB();
+    openADSB();
+  });
+
+  // SkyAware's own aircraft table duplicates the list here and squeezes the
+  // map, so hide it once the map has loaded (the frame is same-origin).
+  $("#aFrame").addEventListener("load", () => {
+    let tries = 0;
+    const t = setInterval(() => {
+      try {
+        const w = $("#aFrame").contentWindow;
+        if (w.OLMap && w.$ && typeof w.toggleSidebarVisibility === "function") {
+          clearInterval(t);
+          if (w.$("#sidebar_container").is(":visible")) w.toggleSidebarVisibility();
+          return;
+        }
+      } catch (_) {}
+      if (++tries > 40) clearInterval(t);
+    }, 250);
+  });
+
+  $("#aList").addEventListener("click", (e) => {
+    const r = e.target.closest("tr[data-hex]");
+    if (!r) return;
+    try { $("#aFrame").contentWindow.selectPlaneByHex(r.dataset.hex, true); } catch (_) {}
+  });
+
+  function miles(a, b) {
+    const R = 3958.8, t = Math.PI / 180;
+    const dLat = (b[0] - a[0]) * t, dLon = (b[1] - a[1]) * t;
+    const h = Math.sin(dLat / 2) ** 2 + Math.cos(a[0] * t) * Math.cos(b[0] * t) * Math.sin(dLon / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(h));
+  }
+  function stat(text, cls) { return '<span class="rstat' + (cls ? " " + cls : "") + '">' + text + "</span>"; }
+
+  async function poll() {
+    if (!aIP || liveTab !== "adsb") return;
+    let d;
+    try { d = await getJSON("/adsb-node/" + aIP + "/data/aircraft.json", 4000); }
+    catch (_) { $("#aStat").innerHTML = stat("No answer from the node", "bad"); return; }
+    const now = Date.now();
+    if (!last || d.now !== last.now) {
+      if (last && msgs != null && d.now > last.now) rate = (d.messages - msgs) / (d.now - last.now);
+      msgs = d.messages; last = d; lastChange = now;
+    }
+    const stale = now - lastChange > 6000;
+    const planes = (d.aircraft || []).filter((a) => a.seen != null && a.seen < 60).sort((a, b) => a.seen - b.seen);
+    const withPos = planes.filter((a) => a.lat != null && a.seen_pos != null && a.seen_pos < 60);
+    const parts = [];
+    parts.push(stale ? stat("Paused: not updating", "bad") : stat("Live", "win"));
+    parts.push(stat(planes.length + (planes.length === 1 ? " aircraft" : " aircraft")));
+    parts.push(stat(withPos.length + " on the map"));
+    if (!stale && rate != null) parts.push(stat(Math.round(rate) + " messages/s"));
+    $("#aStat").innerHTML = parts.join("");
+    if (stale) $("#aNote").textContent = "ADS-B on this node isn't updating. If someone has the SDR tab open, ADS-B is paused until 30 seconds after they leave it.";
+    else $("#aNote").textContent = "ADS-B on " + ($("#aPick .on")?.textContent || "this node") + ".";
+
+    const dist = (a) => (site && a.lat != null ? miles(site, [a.lat, a.lon]) : null);
+    $("#aList").innerHTML = "<tr><th>Flight</th><th>Altitude</th><th>Speed</th>" + (site ? "<th>Distance</th>" : "") + "<th>Heard</th></tr>" +
+      (planes.map((a) => {
+        const alt = a.alt_baro === "ground" ? "ground" : a.alt_baro != null ? a.alt_baro.toLocaleString() + " ft" : "—";
+        const dd = dist(a);
+        return '<tr data-hex="' + esc(a.hex) + '"><td><b>' + esc((a.flight || "").trim() || a.hex.toUpperCase()) + "</b>" + (a.lat == null ? ' <span class="small">no position</span>' : "") + "</td><td>" + alt +
+          "</td><td>" + (a.gs != null ? Math.round(a.gs) + " kt" : "—") + "</td>" + (site ? "<td>" + (dd != null ? dd.toFixed(1) + " mi" : "—") + "</td>" : "") +
+          "<td>" + (a.seen < 1 ? "now" : Math.round(a.seen) + " s ago") + "</td></tr>";
+      }).join("") || '<tr><td colspan="5" class="small">Nothing heard in the last minute.</td></tr>');
+  }
+})();
+
+// ---------- SDR ----------
+// A live waterfall from any node running the Toolchain's SDR agent (port 8090
+// on that node), passed through the gate. Leaving the tab stops the stream, and
+// the node gives its SDR back to ADS-B 30 seconds later.
+(function () {
+  let ROWS = 420;   // waterfall history: 420 rows in Zoom, 90 passes in Scan
+  let sdrIP = null, mode = "sweep", ctrl = null, info = null, ring = null, head = 0, filled = 0, frozen = false;
+  let peak = null, lastRow = null, drag = null, dirty = false;
+  try { sdrIP = localStorage.getItem("parallel-toolchain-sdr"); } catch (_) {}
+
+  for (let sf = 7; sf <= 12; sf++) {
+    $("#sSfTable").insertAdjacentHTML("beforeend", "<tr><td>SF" + sf + "</td>" +
+      [125e3, 250e3, 500e3].map((bw) => "<td>" + (Math.pow(2, sf) / bw * 1000).toFixed(sf < 9 ? 2 : 1) + " ms</td>").join("") + "</tr>");
+  }
+
+  window.openSDR = async function (refresh) {
+    try {
+      const d = await getJSON("/api/sdr" + (refresh ? "?refresh=1" : ""), 12000);
+      const nodes = d.nodes || [];
+      if (!nodes.length) {
+        $("#sdrPick").innerHTML = "";
+        $("#sdrUI").hidden = true;
+        $("#sdrNote").innerHTML = 'No node with an SDR answered. Plug an RTL-SDR into a Haven and run the Toolchain installer again; it adds the SDR agent to nodes that have one. <a href="#" id="sdrRetry">Check again</a>';
+        $("#sdrRetry").addEventListener("click", (e) => { e.preventDefault(); openSDR(true); });
+        return;
+      }
+      if (!nodes.some((n) => n.ip === sdrIP)) sdrIP = nodes[0].ip;
+      $("#sdrPick").innerHTML = nodes.map((n) => '<button data-ip="' + esc(n.ip) + '" class="' + (n.ip === sdrIP ? "on" : "") + '">' + esc(n.name) + "</button>").join("");
+      const cur = nodes.find((n) => n.ip === sdrIP);
+      $("#sdrNote").textContent = "SDR on " + cur.name + (cur.device ? " (" + cur.device.replace(/^Bus.*ID \S+\s*/, "") + ")" : "") + ".";
+      $("#sdrUI").hidden = false;
+    } catch (e) {
+      $("#sdrNote").textContent = "No answer from the gate about SDR nodes.";
+    }
+  };
+  window.closeSDR = function () { if (ctrl) stop("Stopped."); };
+
+  $("#sdrPick").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-ip]");
+    if (!b) return;
+    sdrIP = b.dataset.ip;
+    try { localStorage.setItem("parallel-toolchain-sdr", sdrIP); } catch (_) {}
+    if (ctrl) stop("Stopped.");
+    openSDR();
+  });
+
+  document.querySelectorAll("[data-smode]").forEach((b) => b.addEventListener("click", () => setMode(b.dataset.smode)));
+  function setMode(m) {
+    mode = m;
+    document.querySelectorAll("[data-smode]").forEach((b) => b.classList.toggle("on", b.dataset.smode === m));
+    $("#sLBand").hidden = $("#sLStart").hidden = $("#sLStop").hidden = m !== "sweep";
+    $("#sLCenter").hidden = $("#sLRow").hidden = m !== "zoom";
+    $("#sFreeze").hidden = m !== "zoom";
+    if (ctrl) start();
+  }
+
+  $("#sBand").addEventListener("change", () => {
+    const v = $("#sBand").value;
+    if (!v) return;
+    const [a, b] = v.split(",");
+    $("#sStart").value = a; $("#sStop").value = b;
+    if (ctrl && mode === "sweep") start();
+  });
+  ["#sStart", "#sStop"].forEach((id) => $(id).addEventListener("input", () => ($("#sBand").value = "")));
+
+  // Gain: any value from 0 to 50 dB, or automatic. A change applies right away.
+  function gainValue() {
+    if ($("#sAuto").checked) return -1;
+    const v = parseFloat($("#sGain").value);
+    const g = isNaN(v) ? 0 : Math.max(0, Math.min(50, v));
+    $("#sGain").value = String(g);
+    return g;
+  }
+  $("#sAuto").addEventListener("change", () => { $("#sGain").disabled = $("#sAuto").checked; if (ctrl) start(); });
+  $("#sGain").addEventListener("change", () => { if (ctrl) start(); });
+
+  $("#sGo").addEventListener("click", () => (ctrl ? stop("Stopped. The node gives the SDR back to ADS-B after 30 seconds.") : start()));
+  $("#sFreeze").addEventListener("click", () => {
+    frozen = !frozen;
+    $("#sFreeze").textContent = frozen ? "Unfreeze" : "Freeze";
+    if (!frozen) { drag = null; $("#sMeasure").textContent = ""; }
+  });
+
+  function status(t, err) { $("#sStatus").textContent = t; $("#sStatus").classList.toggle("err", !!err); }
+  function mhz(f) { return (f / 1e6).toFixed(3) + " MHz"; }
+
+  function stop(msg) {
+    if (ctrl) ctrl.abort();
+    ctrl = null;
+    $("#sGo").textContent = "Start";
+    $("#sGo").classList.remove("secondary");
+    if (msg) status(msg);
+  }
+
+  let retries = 0;
+  async function start(keep) {
+    if (!sdrIP) return;
+    if (ctrl) ctrl.abort();
+    const my = new AbortController();
+    ctrl = my;
+    frozen = false; $("#sFreeze").textContent = "Freeze"; drag = null; $("#sMeasure").textContent = "";
+    $("#sGo").textContent = "Stop"; $("#sGo").classList.add("secondary");
+    const base = "/sdr-node/" + sdrIP + "/sdr/", gain = gainValue();
+    const url = mode === "sweep"
+      ? base + "sweep?start=" + Math.round($("#sStart").value * 1e6) + "&stop=" + Math.round($("#sStop").value * 1e6) + "&gain=" + gain
+      : base + "zoom?f=" + Math.round($("#sCenter").value * 1e6) + "&ms=" + $("#sMs").value + "&gain=" + gain;
+    status("Starting the SDR…");
+    try {
+      const res = await fetch(url, { signal: my.signal, cache: "no-store" });
+      if (!res.ok) throw new Error((await res.text()) || res.status);
+      const h = (k) => res.headers.get(k);
+      const bins = +h("X-SDR-Bins");
+      if (mode === "sweep") info = { mode, bins, lo: +h("X-SDR-Start"), hi: +h("X-SDR-Stop"), rowMs: +h("X-SDR-Row-Ms"), use: +h("X-SDR-Use"), steps: +h("X-SDR-Steps"), cursor: null };
+      else {
+        const c = +h("X-SDR-Center"), r = +h("X-SDR-Rate");
+        info = { mode, bins, lo: c - r / 2, hi: c + r / 2, rowMs: +h("X-SDR-Row-Ms") };
+      }
+      const rows = mode === "sweep" ? 90 : 420;
+      if (!(keep && ring && ring.length === bins * rows)) {   // a reconnect keeps the history
+        ROWS = rows;
+        ring = new Uint8Array(bins * ROWS); head = 0; filled = 0; peak = new Uint8Array(bins); lastRow = new Uint8Array(bins);
+      }
+      setupCanvas();
+      status(mode === "sweep"
+        ? "Sweeping " + mhz(info.lo) + " to " + mhz(info.hi) + ", one pass about every " + (info.rowMs / 1000).toFixed(1) + " s. Tap a signal to zoom in on it, then press Identify."
+        : "Live around " + mhz((info.lo + info.hi) / 2) + ", " + info.rowMs.toFixed(1) + " ms per row.");
+      const reader = res.body.getReader();
+      let pend = new Uint8Array(0);
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done || ctrl !== my) break;
+        retries = 0;
+        let buf = value;
+        if (pend.length) { const m = new Uint8Array(pend.length + value.length); m.set(pend); m.set(value, pend.length); buf = m; }
+        let off = 0;
+        if (info.mode === "sweep") {   // one record per step: 2-byte step number, then its bins
+          const rec = 2 + info.use;
+          while (buf.length - off >= rec) { addStep((buf[off] << 8) | buf[off + 1], buf.subarray(off + 2, off + rec)); off += rec; }
+        } else {
+          while (buf.length - off >= bins) { addRow(buf.subarray(off, off + bins)); off += bins; }
+        }
+        pend = buf.slice(off);
+      }
+      if (ctrl === my) streamEnded(my);
+    } catch (e) {
+      if (e.name === "AbortError") return;
+      if (ctrl === my && retries > 0) { streamEnded(my); return; }
+      if (ctrl === my) stop();
+      status("Couldn't start the SDR: " + e.message, true);
+    }
+  }
+
+  // The stream stopped without anyone pressing Stop. If another device (or
+  // Identify elsewhere) took the SDR, say so rather than fight over it;
+  // otherwise the connection dropped, so reconnect.
+  async function streamEnded(my) {
+    await sleep(700);
+    if (ctrl !== my) return;
+    let inUse = false;
+    try { inUse = !!(await getJSON("/sdr-node/" + sdrIP + "/sdr/status", 4000)).inUse; } catch (_) {}
+    if (ctrl !== my) return;
+    if (inUse) { stop(); status("Another device is using this SDR now. Press Start to take it back.", true); return; }
+    if (retries >= 5) { stop(); status("Lost the connection to the SDR. Press Start to try again.", true); return; }
+    retries++;
+    status("Connection dropped. Reconnecting…");
+    start(true);
+  }
+
+  // Scan mode: each step lands in the newest row as it's measured, so the scan
+  // draws left to right. When a pass finishes, the next row starts as a copy
+  // of it, so the parts not yet re-measured still show the last pass.
+  function addStep(st, seg) {
+    if (frozen || st >= info.steps) return;
+    const W = info.bins, base = head * W, off = st * info.use;
+    ring.set(seg, base + off);
+    lastRow.set(seg, off);
+    for (let i = 0; i < seg.length; i++) if (seg[i] > peak[off + i]) peak[off + i] = seg[i];
+    info.cursor = off + seg.length;
+    if (!filled) filled = 1;
+    if (st === info.steps - 1) {
+      const next = (head + 1) % ROWS;
+      ring.copyWithin(next * W, base, base + W);
+      head = next;
+      filled = Math.min(ROWS, filled + 1);
+    }
+    dirty = true;
+  }
+  // newest row: in Scan mode the row being measured; in Zoom the last full row
+  function rowStart(k) { const top = info.mode === "sweep" ? head : head - 1; return (((top - k) % ROWS) + ROWS) % ROWS * info.bins; }
+
+  function addRow(row) {
+    if (frozen) return;
+    ring.set(row, head * info.bins);
+    head = (head + 1) % ROWS;
+    filled = Math.min(ROWS, filled + 1);
+    lastRow.set(row);
+    for (let i = 0; i < row.length; i++) if (row[i] > peak[i]) peak[i] = row[i];
+    dirty = true;
+  }
+
+  function setupCanvas() {
+    const wf = $("#sWf"), sp = $("#sSpec");
+    wf.width = info.bins; wf.height = ROWS;
+    sp.width = Math.min(1600, Math.max(600, info.bins)); sp.height = 110;
+    $("#sAx0").textContent = mhz(info.lo);
+    $("#sAx1").textContent = mhz((info.lo + info.hi) / 2);
+    $("#sAx2").textContent = mhz(info.hi);
+  }
+
+  // Contrast follows the noise floor: the median of recent rows is the floor.
+  function levels() {
+    const n = Math.min(filled, 40), vals = [];
+    for (let k = 0; k < n; k++) {
+      const base = rowStart(k);
+      for (let i = 0; i < info.bins; i += 4) vals.push(ring[base + i]);
+    }
+    vals.sort((a, b) => a - b);
+    const floor = vals[Math.floor(vals.length * 0.5)] ?? 60;
+    return { floor: floor + 4, top: floor + 70 }; // 0.5 dB units: about 2 to 35 dB above the floor
+  }
+
+  const LUT = new Uint8Array(256 * 3);
+  function palette(floor, top) {
+    for (let v = 0; v < 256; v++) {
+      const t = Math.max(0, Math.min(1, (v - floor) / (top - floor)));
+      LUT[3 * v] = 255 * Math.min(1, Math.max(0, 2.2 * t - 1.0));
+      LUT[3 * v + 1] = 255 * Math.min(1, Math.max(0, 1.8 * t - 0.15));
+      LUT[3 * v + 2] = 255 * Math.min(1, 0.18 + 1.4 * t - Math.max(0, 2.4 * t - 1.4));
+    }
+  }
+
+  function draw() {
+    requestAnimationFrame(draw);
+    if (!dirty || !info || tab !== "sdr") return;
+    dirty = false;
+    const { floor, top } = levels();
+    palette(floor, top);
+    const c = $("#sWf").getContext("2d"), img = c.createImageData(info.bins, ROWS);
+    for (let y = 0; y < filled; y++) { // newest at the top
+      const base = rowStart(y);
+      for (let x = 0; x < info.bins; x++) {
+        const v = ring[base + x], p = 4 * (y * info.bins + x);
+        img.data[p] = LUT[3 * v]; img.data[p + 1] = LUT[3 * v + 1]; img.data[p + 2] = LUT[3 * v + 2]; img.data[p + 3] = 255;
+      }
+    }
+    c.putImageData(img, 0, 0);
+    if (drag && drag.x1 != null) {
+      c.strokeStyle = "#f5a623"; c.lineWidth = Math.max(1, info.bins / 400);
+      c.strokeRect(Math.min(drag.x0, drag.x1), Math.min(drag.y0, drag.y1), Math.abs(drag.x1 - drag.x0), Math.abs(drag.y1 - drag.y0));
+    }
+    drawSpectrum(floor);
+  }
+
+  function drawSpectrum(floor) {
+    const sp = $("#sSpec"), c = sp.getContext("2d"), W = sp.width, H = sp.height;
+    c.fillStyle = "#0c0c12"; c.fillRect(0, 0, W, H);
+    const y = (v) => H - 4 - Math.max(0, Math.min(H - 8, ((v - floor + 8) / 90) * (H - 8)));
+    const line = (arr, color) => {
+      c.strokeStyle = color; c.lineWidth = 1.5; c.beginPath();
+      for (let x = 0; x < W; x++) {
+        const i0 = Math.floor((x / W) * arr.length), i1 = Math.max(i0 + 1, Math.floor(((x + 1) / W) * arr.length));
+        let m = 0; for (let i = i0; i < i1; i++) m = Math.max(m, arr[i]);
+        x ? c.lineTo(x, y(m)) : c.moveTo(x, y(m));
+      }
+      c.stroke();
+    };
+    line(peak, "rgba(245,166,35,0.9)");
+    line(lastRow, "rgba(80,200,255,0.9)");
+    if (info.mode === "sweep" && info.cursor != null && !frozen) {   // where the scan is now
+      const x = (info.cursor / info.bins) * W;
+      c.fillStyle = "rgba(255,255,255,0.35)"; c.fillRect(x - 1, 0, 2, H);
+    }
+  }
+
+  // Tap (sweep) to zoom in; drag (zoom) to measure a chirp.
+  function pos(e) {
+    const r = $("#sWf").getBoundingClientRect();
+    return { x: ((e.clientX - r.left) / r.width) * info.bins, y: ((e.clientY - r.top) / r.height) * ROWS };
+  }
+  function freqAt(x) { return info.lo + (x / info.bins) * (info.hi - info.lo); }
+  $("#sWf").addEventListener("pointerdown", (e) => {
+    if (!info) return;
+    const p = pos(e);
+    if (info.mode === "sweep") {
+      $("#sCenter").value = (freqAt(p.x) / 1e6).toFixed(3);
+      setMode("zoom");
+      if (!ctrl) start();
+      return;
+    }
+    if (!frozen) { frozen = true; $("#sFreeze").textContent = "Unfreeze"; }
+    drag = { x0: p.x, y0: p.y, x1: null, y1: null };
+    e.target.setPointerCapture(e.pointerId);
+  });
+  $("#sWf").addEventListener("pointermove", (e) => {
+    if (!drag) return;
+    const p = pos(e); drag.x1 = p.x; drag.y1 = p.y; dirty = true; showMeasure();
+  });
+  $("#sWf").addEventListener("pointerup", () => { if (drag) showMeasure(); });
+
+  function showMeasure() {
+    if (!drag || drag.x1 == null) return;
+    const df = Math.abs(drag.x1 - drag.x0) / info.bins * (info.hi - info.lo);
+    const dt = Math.abs(drag.y1 - drag.y0) * info.rowMs;
+    const bw = [125e3, 250e3, 500e3].reduce((a, b) => (Math.abs(b - df) < Math.abs(a - df) ? b : a));
+    const sf = Math.round(Math.log2((dt / 1000) * bw));
+    const sfText = sf >= 5 && sf <= 12 ? "SF" + sf : "outside SF7–12";
+    $("#sMeasure").innerHTML = "Box: <strong>" + (df / 1e3).toFixed(0) + " kHz</strong> wide, <strong>" + dt.toFixed(1) + " ms</strong> long, centered on " +
+      mhz(freqAt((drag.x0 + drag.x1) / 2)) + ". If that's one chirp: bandwidth ≈ <strong>" + bw / 1e3 + " kHz</strong>, spreading factor ≈ <strong>" + sfText + "</strong>.";
+  }
+
+
+  // ---- Identify: the node listens for a few seconds and classifies each burst ----
+  $("#sIdent").addEventListener("click", identify);
+  async function identify() {
+    if (!sdrIP) return;
+    if (mode === "sweep") {
+      status("First tap the signal you want to identify on the waterfall. That zooms in on it; then press Identify.", true);
+      return;
+    }
+    const f = Math.round($("#sCenter").value * 1e6);
+    const wasLive = !!ctrl;
+    if (ctrl) stop();
+    const secs = 6, btn = $("#sIdent"), box = $("#sIdResult");
+    btn.disabled = true;
+    btn.textContent = "Listening… " + secs;
+    status("Identify is listening on " + mhz(f) + ". The waterfall pauses until it's done.");
+    box.hidden = false;
+    box.innerHTML = '<div class="label">Identify</div><div class="idname" id="idProg">Listening… ' + secs + ' s left</div>' +
+      '<div class="small">The node records ' + secs + ' seconds on ' + esc(mhz(f)) + ', then tests every burst it heard. Make the other radio transmit now: for Reticulum, send a message or an announce.</div>';
+    box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    let left = secs;
+    const tick = setInterval(() => {
+      left--;
+      const txt = left > 0 ? "Listening… " + left : "Analyzing…";
+      btn.textContent = txt;
+      const p = $("#idProg");
+      if (p) p.textContent = left > 0 ? "Listening… " + left + " s left" : "Analyzing what it heard…";
+      if (left <= 0) clearInterval(tick);
+    }, 1000);
+    try {
+      const res = await fetch("/sdr-node/" + sdrIP + "/sdr/identify?f=" + f + "&secs=6&gain=" + gainValue(), { cache: "no-store" });
+      if (!res.ok) throw new Error((await res.text()) || res.status);
+      showIdent(await res.json());
+      status("Done. Press Identify to listen again" + (wasLive ? ", or Start to watch live." : "."));
+    } catch (e) {
+      status("Couldn't identify: " + e.message, true);
+      box.innerHTML = '<div class="label">Identify</div><div class="small bad">Couldn\'t identify: ' + esc(e.message) + "</div>";
+    }
+    clearInterval(tick);
+    btn.textContent = "Identify";
+    btn.disabled = false;
+  }
+
+  const near = (a, b, tol) => Math.abs(a - b) <= tol;
+  // Meshtastic modem presets (bandwidth, SF)
+  const MESHTASTIC = [["LongFast", 250e3, 11], ["LongSlow", 125e3, 12], ["LongModerate", 125e3, 11], ["MediumSlow", 250e3, 10],
+    ["MediumFast", 250e3, 9], ["ShortSlow", 250e3, 8], ["ShortFast", 250e3, 7], ["ShortTurbo", 500e3, 7], ["VeryLongSlow", 62.5e3, 12]];
+
+  // What a LoRa signal could be, from its settings and channel.
+  function loraGuess(g) {
+    const f = g.center;
+    const preset = MESHTASTIC.find((p) => p[1] === g.bw && p[2] === g.sf);
+    const up = (f - 902.3e6) / 0.2e6, up5 = (f - 903.0e6) / 1.6e6, dn = (f - 923.3e6) / 0.6e6;
+    if (near(f, 906.875e6, 30e3) && g.bw === 250e3 && g.sf === 11) return "Meshtastic (US LongFast default channel)";
+    if (near(f, 869.525e6, 30e3) && g.bw === 250e3 && g.sf === 11) return "Meshtastic (EU LongFast default channel)";
+    if (g.bw === 125e3 && up >= -0.1 && up <= 63.1 && near(up, Math.round(up), 0.15)) return "LoRaWAN (US915 uplink channel)";
+    if (g.bw === 500e3 && ((up5 >= -0.1 && up5 <= 7.1 && near(up5, Math.round(up5), 0.05)) || (dn >= -0.1 && dn <= 7.1 && near(dn, Math.round(dn), 0.05)))) return "LoRaWAN (US915 channel)";
+    if (g.bw === 125e3 && [868.1e6, 868.3e6, 868.5e6].some((c) => near(f, c, 15e3))) return "LoRaWAN (EU868 channel)";
+    if (preset) return "Reticulum (RNode), or Meshtastic " + preset[0] + " on a custom channel";
+    return "Reticulum (RNode) likely: not a Meshtastic or LoRaWAN default";
+  }
+
+  // cr is 1..4 (4/5..4/8). Packets in one group usually agree; a mix is reported.
+  function codingRateOf(g) {
+    const cnt = {};
+    for (const c of g.crs || []) cnt[c] = (cnt[c] || 0) + 1;
+    let cr = 0, n = 0, total = 0;
+    for (const k in cnt) { total += cnt[k]; if (cnt[k] > n) { cr = +k; n = cnt[k]; } }
+    return { cr, n, total, mixed: total > n };
+  }
+
+  function showIdent(d) {
+    const groups = new Map();
+    const halow = d.halow && d.halow.length >= 2 ? { lo: (d.halow[0] - d.halow[1] / 2) * 1e6, hi: (d.halow[0] + d.halow[1] / 2) * 1e6, ch: d.halow[3], c: d.halow[0], w: d.halow[1] } : null;
+    for (const b of d.bursts || []) {
+      let key;
+      if (b.kind === "lora") key = "lora|" + b.bw + "|" + b.sf + "|" + Math.round(b.centerHz / 20e3);
+      else if (b.kind === "wide") key = "wide";
+      else key = b.kind + "|" + Math.round(b.centerHz / 25e3);
+      const g = groups.get(key) || { kind: b.kind, n: 0, dur: 0, snr: 0, center: 0, width: 0, bw: b.bw, sf: b.sf, dev: 0, crs: [] };
+      g.n++; g.dur += b.durMs; g.snr = Math.max(g.snr, b.snr); g.center += b.centerHz; g.width = Math.max(g.width, b.widthHz); g.dev += b.devHz || 0;
+      if (b.kind === "lora" && b.cr) g.crs.push(b.cr);
+      groups.set(key, g);
+    }
+    const order = { lora: 0, fsk: 1, wide: 2, narrow: 3, tone: 4 };
+    const list = [...groups.values()].map((g) => ({ ...g, center: g.center / g.n, dur: g.dur / g.n, dev: g.dev / g.n }))
+      .sort((a, b) => order[a.kind] - order[b.kind] || b.n - a.n);
+    // One radio can come back in pieces: LoRa bursts with slightly different
+    // centers, or a piece that failed the LoRa test. Fold every piece into
+    // the LoRa signal it overlaps.
+    const merged = [];
+    for (const g of list) {
+      const host = merged.find((m) => m.kind === "lora" && g.kind !== "wide" && Math.abs(m.center - g.center) < m.bw / 2 &&
+        (g.kind !== "lora" || (m.bw === g.bw && m.sf === g.sf)));
+      if (!host) { merged.push({ ...g, partial: 0 }); continue; }
+      if (g.kind === "lora") {
+        host.center = (host.center * host.n + g.center * g.n) / (host.n + g.n);
+        host.dur = (host.dur * host.n + g.dur * g.n) / (host.n + g.n);
+        host.n += g.n; host.snr = Math.max(host.snr, g.snr);
+        host.crs = (host.crs || []).concat(g.crs || []);
+      } else host.partial += g.n;
+    }
+    const inHaLow = (g) => halow && g.center > halow.lo && g.center < halow.hi;
+    const khz = (hz) => (hz >= 1e6 ? (hz / 1e6).toFixed(1) + " MHz" : Math.round(hz / 1e3) + " kHz");
+    const strength = (db) => (db >= 40 ? "very strong" : db >= 25 ? "strong" : db >= 15 ? "clear" : "weak");
+    const loras = merged.filter((g) => g.kind === "lora");
+    const others = merged.filter((g) => g.kind !== "lora");
+    const wide = others.find((g) => g.kind === "wide");
+    const ownHaLow = halow && halow.hi > d.center - d.rate / 2 && halow.lo < d.center + d.rate / 2;
+    const tile = (label, value, sub) => '<div class="idtile"><div class="label">' + label + '</div><div class="idval">' + esc(value) + "</div>" + (sub ? '<div class="small">' + esc(sub) + "</div>" : "") + "</div>";
+
+    let html = '<div class="label">Identify · listened ' + d.secs + " seconds around " + esc(mhz(d.center)) + "</div>";
+    if (loras.length) {
+      loras.forEach((g, i) => {
+        // Radios are set in round steps; show the nearest 25 kHz step when the
+        // measurement is within ±10 kHz of one (well inside LoRa's tolerance).
+        const step = Math.round(g.center / 25e3) * 25e3;
+        const setTo = Math.abs(step - g.center) <= 10e3 ? step : g.center;
+        const rate = codingRateOf(g);
+        const crName = rate.cr ? "4/" + (4 + rate.cr) : "not read";
+        const crSub = rate.cr ? (rate.mixed ? rate.n + " of " + rate.total + " packets" : "from the packet header") : "header didn't check out";
+        html += '<div class="idhead ok">' + (i === 0 ? "LoRa signal found" : "Another LoRa signal") + "</div>" +
+          '<div class="idtiles">' +
+          tile("Frequency", mhz(setTo), mhz(setTo) !== mhz(g.center) ? "measured " + mhz(g.center) : "") +
+          tile("Bandwidth", g.bw / 1e3 + " kHz") +
+          tile("Spreading factor", "SF" + g.sf) +
+          tile("Coding rate", crName, crSub) +
+          "</div>" +
+          '<p class="idsay">Heard <b>' + g.n + " transmission" + (g.n === 1 ? "" : "s") + "</b>, about " + Math.round(g.dur) + " ms each, " + strength(g.snr) +
+          " (" + Math.round(g.snr) + " dB above the noise). Most likely: <b>" + esc(loraGuess(g)) + "</b>.</p>" +
+          '<p class="idsay">To talk to it, set a LoRa radio to <b>' + esc(mhz(setTo)) + ", " + g.bw / 1e3 + " kHz, SF" + g.sf +
+          (rate.cr ? ", coding rate " + crName : "") + "</b>. " +
+          "Meshtastic and Reticulum use different sync words, so only a radio running the same one will decode it.</p>";
+      });
+    } else if (wide) {
+      html += '<div class="idhead">No LoRa found</div><p class="idsay">' + (ownHaLow
+        ? "What it heard is wider than this 2 MHz view: <b>Wi-Fi HaLow</b>, most likely this Haven's own channel " + halow.ch + " (" + (halow.lo / 1e6).toFixed(0) + "–" + (halow.hi / 1e6).toFixed(0) + " MHz). Its transmissions can cover up a LoRa signal here."
+        : "What it heard is wider than this 2 MHz view and isn't LoRa: Wi-Fi HaLow or another wideband system, or a radio right next to the SDR overloading it. If a radio is close by, move it away or lower the gain, then try again.") + "</p>";
+    } else if (others.length) {
+      html += '<div class="idhead">No LoRa found</div><p class="idsay">Only short or weak signals, listed below. Make sure the other radio transmits while Identify listens (send a message, not just an announce), or try a higher gain.</p>';
+    } else {
+      html += '<div class="idhead">Nothing heard</div><p class="idsay">Nothing rose above the noise in ' + d.secs + " seconds. Make sure the other radio transmits while Identify listens, or try a higher gain.</p>";
+    }
+    if (others.length && (loras.length || others.length > (wide ? 1 : 0))) {
+      const rows = others.map((g) => {
+        let what;
+        if (g.kind === "wide") what = ownHaLow ? "Wi-Fi HaLow (this Haven) or a strong radio nearby" : "wideband: HaLow, other OFDM, or overload from a radio nearby";
+        else if (g.kind === "fsk") what = "FSK (two tones, ±" + Math.round(g.dev / 1e3) + " kHz): smart meter, sensor or remote";
+        else if (g.kind === "tone") what = "steady tone: beacon, test signal or interference";
+        else what = "too short or weak to tell";
+        if (g.kind !== "wide" && inHaLow(g)) what += "; inside this Haven's HaLow channel, likely HaLow";
+        return "<tr><td>" + (g.kind === "wide" ? "whole view" : esc(mhz(g.center))) + "</td><td>" + (g.kind === "wide" ? "over 2 MHz" : esc(khz(g.width))) + "</td><td>" + g.n + "</td><td>" + strength(g.snr) + "</td><td>" + esc(what) + "</td></tr>";
+      }).join("");
+      html += '<details class="idmore"' + (loras.length ? "" : " open") + "><summary>Also heard (" + others.length + ")</summary>" +
+        '<div class="idtable"><table><tr><th>Frequency</th><th>Width</th><th>Times</th><th>Strength</th><th>What it is</th></tr>' + rows + "</table></div></details>";
+    }
+    const box = $("#sIdResult");
+    box.innerHTML = html;
+    box.hidden = false;
+  }
+
+  requestAnimationFrame(draw);
+})();
 </script>
 </body>
 </html>
