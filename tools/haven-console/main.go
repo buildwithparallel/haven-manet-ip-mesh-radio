@@ -155,5 +155,5 @@ func main() {
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 	log.Printf("Parallel Toolchain listening on https://%s", *addr)
-	log.Fatal(srv.ListenAndServeTLS("", ""))
+	log.Fatal(serveHTTPS(*addr, srv))
 }
